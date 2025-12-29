@@ -1,0 +1,12 @@
+name: vrptw
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - matplotlib
+  - numpy
+  - pandas
+  - scipy
+  - networkx
+  - tqdm
+prefix: /opt/anaconda3/envs/vrptw

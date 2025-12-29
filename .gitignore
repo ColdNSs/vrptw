@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+
+# Conda / venv
+.env
+.venv
+conda-meta/
+
+# PyCharm
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+data/
