@@ -19,6 +19,29 @@ class SolomonInstance:
                 f"num_nodes={len(self.nodes)})")
 
 
+class Node:
+    """
+    Wrapper for node data.
+    """
+    def __init__(self, node_id, x, y, demand, ready_time, due_date, service_time):
+        self.id = node_id
+        self.x = x
+        self.y = y
+        self.demand = demand
+        self.ready_time = ready_time
+        self.due_date = due_date
+        self.service_time = service_time
+
+    def __index__(self):
+        """
+        Node can be used as numpy index.
+        """
+        return self.id
+
+    def __repr__(self):
+        return f"Node {self.id}(coord=({self.x}, {self.y}), window=[{self.ready_time}, {self.due_date}], demand={self.demand}, service={self.service_time})"
+
+
 def read_solomon_instance(filepath):
     """
     Parses a standard Solomon VRPTW text file.
@@ -73,15 +96,15 @@ def read_solomon_instance(filepath):
                 continue  # Skip header line inside CUSTOMER section
 
             # Parse node attributes
-            node = {
-                'id': int(parts[0]),
-                'x': float(parts[1]),
-                'y': float(parts[2]),
-                'demand': float(parts[3]),
-                'ready_time': float(parts[4]),
-                'due_date': float(parts[5]),
-                'service_time': float(parts[6])
-            }
+            node = Node(
+                node_id=int(parts[0]),
+                x=float(parts[1]),
+                y=float(parts[2]),
+                demand=float(parts[3]),
+                ready_time=float(parts[4]),
+                due_date=float(parts[5]),
+                service_time=float(parts[6])
+            )
             nodes.append(node)
 
     return SolomonInstance(instance_name, num_vehicles, capacity, nodes)
