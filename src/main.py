@@ -13,27 +13,37 @@ from src.solvers import GreedySolver
 from src.local_search import TwoOptLocalSearch
 
 
+def greedy_and_two_opt(instance):
+    routes = []
+    unvisited = instance.nodes[1:].copy()
+
+    # This function has no upper-level allocation
+
+    # Lower-level: repeatedly run greedy solver on all unvisited nodes
+    while unvisited:
+        solver = GreedySolver(instance)
+        route = solver.solve(unvisited)
+        routes.append(route)
+    print(routes)
+
+    # Lower-level: use 2-opt to optimize each route
+    local_search = TwoOptLocalSearch()
+    for route in routes:
+        local_search.optimize(route)
+    print(routes)
+    print(f"Num of routes: {len(routes)}")
 
 def main():
     print("VRPTW environment ready")
     print("NumPy version:", np.__version__)
 
-    # Build your path relative to repo root
+    # Build path relative to repo root
     data_path = root / "data" / "benchmarks" / "solomon-100" / "r102.txt"
 
     instance = read_solomon_instance(data_path)
-    print(instance)
+    print(f"Loaded instance: {instance}")
 
-    # Swap in any Solver implementation here
-    solver = GreedySolver(instance)
-    routes = solver.solve()
-    print(routes)
-
-    # Swap in any LocalSearch implementation here
-    local_search = TwoOptLocalSearch()
-    for route in routes:
-        local_search.optimize(route)
-    print(routes)
+    greedy_and_two_opt(instance)
 
 
 if __name__ == "__main__":

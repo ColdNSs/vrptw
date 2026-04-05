@@ -9,6 +9,6 @@ class Solver(ABC):
         self.instance = instance
 
     @abstractmethod
-    def solve(self) -> List:
+    def solve(self, unvisited) -> List:
         """Return a list of Route objects."""
         ...
