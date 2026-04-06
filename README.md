@@ -29,29 +29,29 @@ Following the MMOEA-DL paradigm, we combine evolutionary exploration at the uppe
 - [x] Solomon-100 benchmark parser
 - [x] Euclidean distance matrix
 - [x] Greedy solver (nearest-neighbor + feasibility checks)
-- [ ] Evaluation harness (metrics: total distance, vehicle count, feasibility rate)
+- [x] Evaluation harness (metrics: route distance, total distance, finish time, makespan, time window penalties, etc.)
 
 ### Phase 2 — Bi-Level Structure
-- [ ] `Route` class refactor into two separate concerns:
+- [x] `Individual` class handles two separate concerns:
   - **Upper solver**: Genetic algorithm / differential evolution for customer-to-route assignment
   - **Lower solver**: Sequence optimization within each route (replaces greedy)
 - [ ] Proper bi-level fitness evaluation
 
-### Phase 3 — DRL Lower-Level Solver (Nazari et al. approach)
+### Phase 3 — Multimodal Multi-Objective
+- [ ] Multi-objective fitness: minimize total distance + total tardiness
+- [ ] MMODE_CSCD crowding distance for diversity preservation
+- [ ] Pareto front extraction and visualization
+
+### Phase 4 — DRL Lower-Level Solver (Nazari et al. approach)
 - [ ] Encoder-decoder with attention mechanism (GRU decoder)
 - [ ] Actor-Critic training on Solomon instances
 - [ ] End-to-end inference: given customer coordinates → optimal visiting order
 - [ ] Integration as the lower-level solver in the bi-level framework
 
-### Phase 4 — LNS Post-Optimization
+### Phase 5 — LNS Post-Optimization
 - [ ] Destroy operator (random removal of customers from route)
 - [ ] Repair operator (re-insertion with feasibility checks)
 - [ ] Iterated LNS for local refinement of final-generation solutions
-
-### Phase 5 — Multimodal Multi-Objective Extension
-- [ ] Multi-objective fitness: minimize total distance + number of vehicles + total tardiness
-- [ ] MMODE_CSCD crowding distance for diversity preservation
-- [ ] Pareto front extraction and visualization
 
 ### Phase 6 — Benchmarking & Analysis
 - [ ] Compare against Solomon best-known solutions
