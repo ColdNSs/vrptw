@@ -94,4 +94,4 @@ class Route:
 
     def __repr__(self):
         path_ids = [n.id for n in self.sequence]
-        return f"Route(Load={self.load}, Cost={self.cost:.2f}, Path={path_ids})"
+        return f"Route(Load={self.load}, Cost={self.cost:.2f}, TW_Penalties={self.tw_penalties:.2f}, Path={path_ids})"

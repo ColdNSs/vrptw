@@ -5,8 +5,9 @@ from typing import List
 class Solver(ABC):
     """Abstract base for VRPTW solvers."""
 
-    def __init__(self, instance):
+    def __init__(self, instance, dist_matrix):
         self.instance = instance
+        self.dist_matrix = dist_matrix
 
     @abstractmethod
     def solve(self, unvisited) -> List:

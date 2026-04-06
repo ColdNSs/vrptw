@@ -9,29 +9,30 @@ sys.path.insert(0, str(root))
 
 import numpy as np
 from src.parser import read_solomon_instance
+from src.utils import calculate_euclidean_matrix
 from src.solvers import GreedySolver
 from src.local_search import TwoOptLocalSearch
 
 
-def greedy_and_two_opt(instance):
-    routes = []
-    unvisited = instance.nodes[1:].copy()
+def greedy_and_two_opt(instance, dist_matrix):
+    # Upper-level allocation
 
-    # This function has no upper-level allocation
+    # Expected result:
+    # Greedy: [0, 27, 69, 1, 50, 77, 3, 0]
+    # After 2-opt: [0, 27, 69, 1, 50, 3, 77, 0]
+    test_nodes = [1, 3, 27, 50, 69, 77]
+
+    unvisited = [instance.nodes[i] for i in test_nodes]
 
     # Lower-level: repeatedly run greedy solver on all unvisited nodes
-    while unvisited:
-        solver = GreedySolver(instance)
-        route = solver.solve(unvisited)
-        routes.append(route)
-    print(routes)
+    solver = GreedySolver(instance, dist_matrix)
+    route = solver.solve(unvisited)
+    print(f"Greedy: {route}")
 
     # Lower-level: use 2-opt to optimize each route
     local_search = TwoOptLocalSearch()
-    for route in routes:
-        local_search.optimize(route)
-    print(routes)
-    print(f"Num of routes: {len(routes)}")
+    local_search.optimize(route)
+    print(f"2-opt: {route}")
 
 def main():
     print("VRPTW environment ready")
@@ -43,7 +44,9 @@ def main():
     instance = read_solomon_instance(data_path)
     print(f"Loaded instance: {instance}")
 
-    greedy_and_two_opt(instance)
+    dist_matrix = calculate_euclidean_matrix(instance.nodes)
+
+    greedy_and_two_opt(instance, dist_matrix)
 
 
 if __name__ == "__main__":
