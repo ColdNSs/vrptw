@@ -31,5 +31,6 @@ class GreedySolver(Solver):
                 break
 
         route.close_route()
+        route.update_state()
 
         return route
