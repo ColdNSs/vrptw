@@ -56,7 +56,6 @@ class Route:
         if self.is_feasible(self.depot):
             self.add_node(self.depot)
         else:
-            print("Unable to reach depot when trying to close route!")
             self.add_node(self.depot)
         self.is_closed = True
 

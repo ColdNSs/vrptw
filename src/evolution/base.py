@@ -1,6 +1,5 @@
 import numpy as np
-from solvers import GreedySolver
-from local_search import TwoOptLocalSearch
+from abc import ABC, abstractmethod
 
 
 class Individual:
@@ -13,7 +12,7 @@ class Individual:
         self.num_vehicles = num_vehicles
 
         # Continuous representation: Array of size num_tasks, values in[0, num_vehicles)
-        self.chromosome = np.random.uniform(0, num_vehicles, size=num_tasks)
+        self.chromosome = np.zeros(num_tasks)
 
         # Objectives
         self.f1_distance = float('inf')
@@ -22,20 +21,42 @@ class Individual:
         # Store the actual routes for this individual
         self.routes = []
 
+        # Signature used for redundancy deletion
+        self.signature = ""
+
+    def set_chromosome(self, new_chromosome):
+        """
+        Safely assigns a new chromosome with strict dimension and boundary checks.
+        """
+        new_chromosome = np.array(new_chromosome, dtype=float)
+
+        # 1. Dimension Check
+        if len(new_chromosome) != self.num_tasks:
+            raise ValueError(f"Dimension mismatch: Expected {self.num_tasks}, got {len(new_chromosome)}")
+
+        # 2. Boundary Enforcement
+        # We clip to (num_vehicles - 1e-5) to guarantee np.floor() never returns num_vehicles
+        self.chromosome = np.clip(new_chromosome, 0.0, self.num_vehicles - 1e-5)
+
     def decode(self):
         """
         Converts the continuous chromosome into discrete vehicle assignments.
-        Returns a dictionary mapping {vehicle_id: [list of customer ids]}
+        Returns a list [[vehicle 0 list of customer ids], [vehicle 1 list of customer ids], ...]
         """
         assignments = np.floor(self.chromosome).astype(int)
 
-        allocation = {v: [] for v in range(self.num_vehicles)}
-        # Note: Customer IDs usually start at 1 (0 is depot)
-        for task_idx, vehicle_id in enumerate(assignments):
+        groups = {}
+        for task_idx, v_id in enumerate(assignments):
             customer_id = task_idx + 1
-            allocation[vehicle_id].append(customer_id)
+            if v_id not in groups:
+                groups[v_id] = []
+            groups[v_id].append(customer_id)
 
-        return allocation
+        raw_clusters = list(groups.values())
+        canonical_allocation = sorted([sorted(cluster) for cluster in raw_clusters if cluster])
+        self.signature = str(canonical_allocation)
+
+        return canonical_allocation
 
 
 class Evaluator:
@@ -43,11 +64,11 @@ class Evaluator:
     The 'Bridge' between Upper Level (EA) and Lower Level (Routing).
     """
 
-    def __init__(self, instance, dist_matrix):
+    def __init__(self, instance, dist_matrix, solver, local_search):
         self.instance = instance
         self.dist_matrix = dist_matrix
-        self.solver = GreedySolver(instance)
-        self.local_search = TwoOptLocalSearch()
+        self.solver = solver
+        self.local_search = local_search
 
     def evaluate(self, individual):
         """
@@ -80,3 +101,17 @@ class Evaluator:
         unvisited = [self.instance.nodes[i] for i in customer_ids]
         route = self.solver.solve(unvisited)
         return route
+
+
+class Evolution(ABC):
+    """Abstract base for Evolutionary Algorithms."""
+
+    def __init__(self, evaluator):
+        self.evaluator = evaluator
+        self.instance = evaluator.instance
+        self.dist_matrix = evaluator.dist_matrix
+
+    @abstractmethod
+    def solve(self) -> list[Individual]:
+        """Return a list of Individual objects."""
+        ...
