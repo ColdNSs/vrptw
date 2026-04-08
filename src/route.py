@@ -9,6 +9,7 @@ class Route:
         self.time = 0.0
         self.cost = 0.0
         self.finish_time = 0.0
+        self.load_penalty = 0.0
         self.tw_penalties = 0.0
         self.is_closed = False
 
@@ -63,6 +64,7 @@ class Route:
         seq = self.sequence
 
         total_dist = 0.0
+        total_load = 0.0
         current_time = seq[0].ready_time
         tw_penalties = 0.0
 
@@ -73,6 +75,7 @@ class Route:
             # 1. Distance
             dist = self.dist_matrix[prev_node][next_node]
             total_dist += dist
+            total_load += next_node.demand
 
             # 2. Time simulation
             departure_time = current_time + prev_node.service_time
@@ -89,8 +92,10 @@ class Route:
         # Update cost, finish time and time window penalties
         self.cost = total_dist
         self.finish_time = current_time
+        self.load_penalty = max(0.0, total_load - self.capacity)
         self.tw_penalties = tw_penalties
 
     def __repr__(self):
         path_ids = [n.id for n in self.sequence]
-        return f"Route(Load={self.load}, Cost={self.cost:.2f}, TW_Penalties={self.tw_penalties:.2f}, Path={path_ids})"
+        return (f"Route(Load={self.load}, Cost={self.cost:.2f}, Load_Penalty={self.load_penalty}, "
+                f"TW_Penalties={self.tw_penalties:.2f}, Path={path_ids})")

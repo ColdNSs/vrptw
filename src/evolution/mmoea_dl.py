@@ -1,4 +1,5 @@
 from .base import Evolution, Individual
+from .utils import fast_non_dominated_sort, delete_redundant_solutions, calculate_crowding_distance
 import numpy as np
 import random
 
@@ -35,8 +36,8 @@ class MMOEA_DL(Evolution):
             combined_pop = population + offspring_population
 
             # 4. Sorting & Redundancy Deletion
-            fronts = self._fast_non_dominated_sort(combined_pop)
-            fronts = self._delete_redundant_solutions(fronts)
+            fronts = fast_non_dominated_sort(combined_pop)
+            fronts = delete_redundant_solutions(fronts)
 
             # 5. Environmental Selection
             population = self._environmental_selection(fronts)
@@ -71,6 +72,7 @@ class MMOEA_DL(Evolution):
             r1, r2 = random.sample([x for j, x in enumerate(population) if j != i], 2)
 
             # Simplified DBESM
+            # TODO: Full DBESM
             exemplar = random.choice(elite_pool)
 
             # DE Mutation
@@ -101,14 +103,28 @@ class MMOEA_DL(Evolution):
         for ind in population:
             self.evaluator.evaluate(ind)
 
-    def _fast_non_dominated_sort(self, population):
-        # Implement constrained dominance sorting here
-        pass
-
-    def _delete_redundant_solutions(self, fronts):
-        # Use ind.signature to drop clones
-        pass
-
     def _environmental_selection(self, fronts):
-        # Pick top NP individuals using Front Rank and Crowding Distance
-        pass
+        """
+        Selects exactly `pop_size` individuals for the next generation.
+        """
+        next_population = []
+        remain = self.pop_size
+
+        for front in fronts:
+            if len(front) <= remain:
+                # The whole front fits
+                next_population.extend(front)
+                remain -= len(front)
+            else:
+                # The front is too large, we must select the most diverse individuals
+                # TODO: change to CSCD
+                calculate_crowding_distance(front)
+
+                # Sort descending by crowding distance (larger distance = more isolated/diverse = better)
+                front.sort(key=lambda x: x.crowding_distance, reverse=True)
+
+                next_population.extend(front[:remain])
+                remain = 0
+                break
+
+        return next_population

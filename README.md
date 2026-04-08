@@ -32,7 +32,7 @@ Following the MMOEA-DL paradigm, we combine evolutionary exploration at the uppe
 - [x] Evaluation harness (metrics: route distance, total distance, finish time, makespan, time window penalties, etc.)
 
 ### Phase 2 — Bi-Level Structure
-- [x] `Individual` class handles two separate concerns:
+- [x] `Evaluator` class handles two separate concerns:
   - **Upper solver**: Genetic algorithm / differential evolution for customer-to-route assignment
   - **Lower solver**: Sequence optimization within each route (replaces greedy)
 - [ ] Proper bi-level fitness evaluation

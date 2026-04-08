@@ -8,6 +8,7 @@ class TwoOptLocalSearch(LocalSearch):
     """
 
     def optimize(self, route):
+        route.update_state()
         improved = True
         while improved:
             improved = False

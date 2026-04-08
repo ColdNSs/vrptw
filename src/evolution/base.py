@@ -18,6 +18,9 @@ class Individual:
         self.f1_distance = float('inf')
         self.f2_makespan = float('inf')
 
+        # Constraints
+        self.total_penalty = float('inf')
+
         # Store the actual routes for this individual
         self.routes = []
 
@@ -64,11 +67,13 @@ class Evaluator:
     The 'Bridge' between Upper Level (EA) and Lower Level (Routing).
     """
 
-    def __init__(self, instance, dist_matrix, solver, local_search):
+    def __init__(self, instance, dist_matrix, solver, local_search, w_load, w_time):
         self.instance = instance
         self.dist_matrix = dist_matrix
         self.solver = solver
         self.local_search = local_search
+        self.w_load = w_load
+        self.w_time = w_time
 
     def evaluate(self, individual):
         """
@@ -76,6 +81,10 @@ class Evaluator:
         """
         allocation = individual.decode()
         individual.routes = []
+
+        individual.total_penalty = 0.0
+        individual.f1_distance = 0.0
+        individual.f2_makespan = 0.0
 
         # Lower Level Optimization for each vehicle
         for vehicle_id, customer_ids in allocation.items():
@@ -88,10 +97,16 @@ class Evaluator:
             # 2. Route Improvement
             self.local_search.optimize(route)
 
+            # 3. Aggregate Penalties using the weights
+            route_penalty = (self.w_load * route.load_penalty) + (self.w_time * route.tw_penalties)
+
+            individual.total_penalty += route_penalty
+
             individual.routes.append(route)
 
         # Calculate Upper Level Objectives
         if not individual.routes:
+            individual.total_penalty = float('inf')
             return
 
         individual.f1_distance = sum(r.cost for r in individual.routes)
