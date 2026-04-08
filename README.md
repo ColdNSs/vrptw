@@ -35,12 +35,12 @@ Following the MMOEA-DL paradigm, we combine evolutionary exploration at the uppe
 - [x] `Evaluator` class handles two separate concerns:
   - **Upper solver**: Genetic algorithm / differential evolution for customer-to-route assignment
   - **Lower solver**: Sequence optimization within each route (replaces greedy)
-- [ ] Proper bi-level fitness evaluation
+- [x] Proper bi-level fitness evaluation
 
 ### Phase 3 — Multimodal Multi-Objective
-- [ ] Multi-objective fitness: minimize total distance + total tardiness
+- [x] Multi-objective fitness: minimize total distance + total tardiness
 - [ ] MMODE_CSCD crowding distance for diversity preservation
-- [ ] Pareto front extraction and visualization
+- [x] Pareto front extraction and visualization
 
 ### Phase 4 — DRL Lower-Level Solver (Nazari et al. approach)
 - [ ] Encoder-decoder with attention mechanism (GRU decoder)
@@ -49,8 +49,8 @@ Following the MMOEA-DL paradigm, we combine evolutionary exploration at the uppe
 - [ ] Integration as the lower-level solver in the bi-level framework
 
 ### Phase 5 — LNS Post-Optimization
-- [ ] Destroy operator (random removal of customers from route)
-- [ ] Repair operator (re-insertion with feasibility checks)
+- [x] Destroy operator (random removal of customers from route)
+- [x] Repair operator (re-insertion with feasibility checks)
 - [ ] Iterated LNS for local refinement of final-generation solutions
 
 ### Phase 6 — Benchmarking & Analysis

@@ -24,6 +24,7 @@ def fast_non_dominated_sort(population):
     """
     fronts = [[]]
     domination_count = {ind: 0 for ind in population}
+    rank = {ind: 0 for ind in population}
     dominated_solutions = {ind: [] for ind in population}
 
     for p in population:
@@ -44,32 +45,29 @@ def fast_non_dominated_sort(population):
                 domination_count[q] -= 1
                 if domination_count[q] == 0:
                     next_front.append(q)
+                    rank[q] = i + 1
         i += 1
         if len(next_front) > 0:
             fronts.append(next_front)
         else:
             break
 
-    return fronts
+    return fronts, rank, dominated_solutions
 
-def get_exemplar_dbesm(parent, population):
+def get_exemplar_dbesm(parent, population, fronts, rank):
     """
     Full DBESM: Finds the closest strictly better individual in the decision space.
     """
     better_inds = []
 
     # 1. Find all individuals that are "Better" (Using our Constrained Dominance)
-    for other in population:
-        if other is parent:
-            continue
-        # If 'other' dominates 'parent', it is strictly better
-        if dominates(other, parent):
-            better_inds.append(other)
-
+    if rank[parent] > 0:
+        for front in fronts[:rank[parent]]:
+            better_inds.extend(front)
     # 2. Edge Case: If the parent is a top-tier elite (no one dominates it)
-    if not better_inds:
+    elif rank[parent] == 0:
         # Gather all Rank 0 individuals (excluding the parent itself)
-        front_1 = fast_non_dominated_sort(population)[0]
+        front_1 = fronts[0].copy()
         front_1.remove(parent)
         if front_1:
             return random.choice(front_1)

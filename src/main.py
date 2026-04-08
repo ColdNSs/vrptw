@@ -18,7 +18,7 @@ from src.utils import calculate_penalty_weights
 from copy import deepcopy, copy
 
 
-def apply_seed(seed):
+def apply_seed(seed=None):
     # Seed Management
     seed = seed if seed is not None else random.randint(0, 2 ** 32 - 1)
     random.seed(seed)
@@ -65,7 +65,7 @@ def mmoea_dl_test(instance, dist_matrix):
     local_search = TwoOptLocalSearch(instance, dist_matrix)
     # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30)
     evaluator = Evaluator(instance, dist_matrix, solver, local_search, w_load, w_time)
-    mmoea_dl = MMOEA_DL(instance, dist_matrix, evaluator, max_gen=200)
+    mmoea_dl = MMOEA_DL(instance, dist_matrix, evaluator, max_gen=400)
     fronts = mmoea_dl.solve()
 
     # Print top 10 fronts
@@ -87,7 +87,7 @@ def main():
     dist_matrix = calculate_euclidean_matrix(instance.nodes)
     print(f"Loaded instance: {instance}")
 
-    apply_seed(1488761389)
+    apply_seed()
 
     lower_level_test(instance, dist_matrix)
 

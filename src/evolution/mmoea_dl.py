@@ -31,7 +31,7 @@ class MMOEA_DL(Evolution):
             combined_pop = population + offspring_population
 
             # 4. Sorting & Redundancy Deletion
-            fronts = fast_non_dominated_sort(combined_pop)
+            fronts, _, _ = fast_non_dominated_sort(combined_pop)
             fronts = delete_redundant_solutions(fronts)
 
             # 5. Environmental Selection
@@ -66,6 +66,8 @@ class MMOEA_DL(Evolution):
         num_vehicles = self.instance.num_vehicles
         offspring = []
 
+        fronts, rank, _ = fast_non_dominated_sort(population)
+
         # Sort population once for the simplified DBESM elite pool
         # sorted_pop = sorted(population, key=lambda x: (x.total_penalty, x.f1_distance))
         # elite_pool = sorted_pop[:max(1, self.pop_size // 10)]
@@ -78,7 +80,7 @@ class MMOEA_DL(Evolution):
             # exemplar = random.choice(elite_pool)
 
             # Full DBESM
-            exemplar = get_exemplar_dbesm(parent, population)
+            exemplar = get_exemplar_dbesm(parent, population, fronts, rank)
 
             # DE Mutation
             v = parent.chromosome + self.F * (exemplar.chromosome - parent.chromosome) + self.F * (

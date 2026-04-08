@@ -62,7 +62,7 @@ class Individual:
         return canonical_allocation
 
     def __repr__(self):
-        return (f"Ind(Distance={self.f1_distance}, Makespan={self.f2_makespan}, Penalty={self.total_penalty}, "
+        return (f"Ind(Distance={self.f1_distance:.2f}, Makespan={self.f2_makespan:.2f}, Penalty={self.total_penalty:.2f}, "
                 f"Routes={self.routes})")
 
 
