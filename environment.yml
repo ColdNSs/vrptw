@@ -1,5 +1,6 @@
 name: vrptw
 channels:
+  - pytorch
   - defaults
 dependencies:
   - python=3.9
