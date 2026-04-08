@@ -24,6 +24,8 @@ TODO:
 
 import torch
 
+print("Imported torch")
+
 if torch.backends.mps.is_available():
     device = torch.device("mps")
     print("Metal (MPS) backend is available! Using GPU.")
