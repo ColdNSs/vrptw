@@ -62,6 +62,8 @@ def delete_redundant_solutions(fronts):
             if ind.signature not in seen_signatures:
                 seen_signatures.add(ind.signature)
                 clean_front.append(ind)
+            else:
+                print(f"  [!] Seen signature. Remove individual from the front.")
 
         if len(clean_front) > 0:
             clean_fronts.append(clean_front)
@@ -103,9 +105,3 @@ def calculate_crowding_distance(front):
         crowding_distance[front[i]] += (front[i + 1].f2_makespan - front[i - 1].f2_makespan) / f2_range
 
     return crowding_distance
-
-# Being how much time late is as bad as being 1 unit overweight?
-def calculate_penalty_weights(instance):
-    weight_load = instance.nodes[0].due_date / instance.capacity
-    weight_time = 1.0
-    return weight_load, weight_time

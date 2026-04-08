@@ -1,3 +1,6 @@
+from .utils import assess_sequence
+
+
 class Route:
     def __init__(self, instance, dist_matrix):
         self.capacity = instance.capacity
@@ -61,38 +64,12 @@ class Route:
         self.is_closed = True
 
     def update_state(self):
-        seq = self.sequence
-
-        total_dist = 0.0
-        total_load = 0.0
-        current_time = seq[0].ready_time
-        tw_penalties = 0.0
-
-        for k in range(len(seq) - 1):
-            prev_node = seq[k]
-            next_node = seq[k + 1]
-
-            # 1. Distance
-            dist = self.dist_matrix[prev_node][next_node]
-            total_dist += dist
-            total_load += next_node.demand
-
-            # 2. Time simulation
-            departure_time = current_time + prev_node.service_time
-            arrival_time = departure_time + dist
-
-            # 3. Time Window Penalty (Late arrival)
-            if arrival_time > next_node.due_date:
-                # Penalty is proportional to how late we are
-                tw_penalties += (arrival_time - next_node.due_date)
-
-            # Update current time (we must wait if we arrive before ready_time)
-            current_time = max(arrival_time, next_node.ready_time)
+        cost, finish_time, load_penalty, tw_penalties = assess_sequence(self.sequence, self.dist_matrix, self.capacity)
 
         # Update cost, finish time and time window penalties
-        self.cost = total_dist
-        self.finish_time = current_time
-        self.load_penalty = max(0.0, total_load - self.capacity)
+        self.cost = cost
+        self.finish_time = finish_time
+        self.load_penalty = load_penalty
         self.tw_penalties = tw_penalties
 
     def __repr__(self):

@@ -13,7 +13,7 @@ from src.utils import calculate_euclidean_matrix
 from src.solvers import GreedySolver
 from src.local_search import TwoOptLocalSearch
 from src.evolution import Evaluator, MMOEA_DL
-from src.evolution.utils import calculate_penalty_weights
+from src.utils import calculate_penalty_weights
 
 
 def greedy_and_two_opt(instance, dist_matrix):
@@ -48,10 +48,10 @@ def mmoea_dl_test(instance, dist_matrix):
     local_search = TwoOptLocalSearch()
     w_load, w_time = calculate_penalty_weights(instance)
     evaluator = Evaluator(instance, dist_matrix, solver, local_search, w_load, w_time)
-    mmoea_dl = MMOEA_DL(evaluator, seed=1374339708)
+    mmoea_dl = MMOEA_DL(evaluator, seed=1488761389)
     fronts = mmoea_dl.solve()
 
-    # Print top 10 front
+    # Print top 10 fronts
     for i, front in enumerate(fronts):
         if i > 9:
             break
