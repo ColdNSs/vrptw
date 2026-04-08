@@ -8,16 +8,25 @@ root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(root))
 
 import numpy as np
+import random
 from src.parser import read_solomon_instance
 from src.utils import calculate_euclidean_matrix
 from src.solvers import GreedySolver
-from src.local_search import TwoOptLocalSearch
+from src.local_search import TwoOptLocalSearch, LNSLocalSearch
 from src.evolution import Evaluator, MMOEA_DL
 from src.utils import calculate_penalty_weights
+from copy import deepcopy, copy
 
 
-def greedy_and_two_opt(instance, dist_matrix):
-    print(f"--- Lower-level Test: Greedy and 2-opt ---")
+def apply_seed(seed):
+    # Seed Management
+    seed = seed if seed is not None else random.randint(0, 2 ** 32 - 1)
+    random.seed(seed)
+    np.random.seed(seed)
+    print(f"Seed: {seed}")
+
+def lower_level_test(instance, dist_matrix):
+    print(f"--- Lower-level Test: Greedy and 2-opt / LNS ---")
 
     # Upper-level allocation
 
@@ -31,12 +40,18 @@ def greedy_and_two_opt(instance, dist_matrix):
     # Lower-level: repeatedly run greedy solver on all unvisited nodes
     solver = GreedySolver(instance, dist_matrix)
     route = solver.solve(unvisited)
+    route_copy = deepcopy(route)
     print(f"Greedy: {route}")
 
     # Lower-level: use 2-opt to optimize each route
-    local_search = TwoOptLocalSearch()
+    local_search = TwoOptLocalSearch(instance, dist_matrix)
     local_search.optimize(route)
     print(f"2-opt: {route}")
+
+    # Lower-level: use LNS to optimize each route
+    local_search = LNSLocalSearch(instance, dist_matrix)
+    local_search.optimize(route_copy)
+    print(f"LNS: {route_copy}")
 
 def mmoea_dl_test(instance, dist_matrix):
     print(f"--- MMOEA-DL Test ---")
@@ -44,11 +59,13 @@ def mmoea_dl_test(instance, dist_matrix):
     instance.nodes = instance.nodes[:26]
     print(f"Cropped instance to the first 25 customers")
 
-    solver = GreedySolver(instance, dist_matrix)
-    local_search = TwoOptLocalSearch()
     w_load, w_time = calculate_penalty_weights(instance)
+
+    solver = GreedySolver(instance, dist_matrix)
+    local_search = TwoOptLocalSearch(instance, dist_matrix)
+    # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30)
     evaluator = Evaluator(instance, dist_matrix, solver, local_search, w_load, w_time)
-    mmoea_dl = MMOEA_DL(evaluator, seed=1488761389)
+    mmoea_dl = MMOEA_DL(instance, dist_matrix, evaluator, max_gen=200)
     fronts = mmoea_dl.solve()
 
     # Print top 10 fronts
@@ -67,11 +84,12 @@ def main():
     data_path = root / "data" / "benchmarks" / "solomon-100" / "r102.txt"
 
     instance = read_solomon_instance(data_path)
+    dist_matrix = calculate_euclidean_matrix(instance.nodes)
     print(f"Loaded instance: {instance}")
 
-    dist_matrix = calculate_euclidean_matrix(instance.nodes)
+    apply_seed(1488761389)
 
-    greedy_and_two_opt(instance, dist_matrix)
+    lower_level_test(instance, dist_matrix)
 
     mmoea_dl_test(instance, dist_matrix)
 

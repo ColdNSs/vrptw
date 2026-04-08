@@ -124,10 +124,10 @@ class Evaluator:
 class Evolution(ABC):
     """Abstract base for Evolutionary Algorithms."""
 
-    def __init__(self, evaluator):
+    def __init__(self, instance, dist_matrix, evaluator):
+        self.instance = instance
+        self.dist_matrix = dist_matrix
         self.evaluator = evaluator
-        self.instance = evaluator.instance
-        self.dist_matrix = evaluator.dist_matrix
 
     @abstractmethod
     def solve(self) -> list[list[Individual]]:

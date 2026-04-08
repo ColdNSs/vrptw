@@ -1,3 +1,6 @@
+import random
+import numpy as np
+
 def dominates(ind_a, ind_b):
     """
     Returns True if ind_a strictly dominates ind_b using Constrained Dominance.
@@ -48,6 +51,45 @@ def fast_non_dominated_sort(population):
             break
 
     return fronts
+
+def get_exemplar_dbesm(parent, population):
+    """
+    Full DBESM: Finds the closest strictly better individual in the decision space.
+    """
+    better_inds = []
+
+    # 1. Find all individuals that are "Better" (Using our Constrained Dominance)
+    for other in population:
+        if other is parent:
+            continue
+        # If 'other' dominates 'parent', it is strictly better
+        if dominates(other, parent):
+            better_inds.append(other)
+
+    # 2. Edge Case: If the parent is a top-tier elite (no one dominates it)
+    if not better_inds:
+        # Gather all Rank 0 individuals (excluding the parent itself)
+        front_1 = fast_non_dominated_sort(population)[0]
+        front_1.remove(parent)
+        if front_1:
+            return random.choice(front_1)
+        else:
+            # Extreme fallback (e.g. pop size 1 or everyone is identical)
+            return random.choice([p for p in population if p is not parent])
+
+    # 3. Find the closest better individual (Euclidean distance on chromosomes)
+    best_exemplar = None
+    min_dist = float('inf')
+
+    p_chrom = parent.chromosome
+    for candidate in better_inds:
+        # np.linalg.norm calculates the Euclidean distance between the arrays
+        dist = np.linalg.norm(p_chrom - candidate.chromosome)
+        if dist < min_dist:
+            min_dist = dist
+            best_exemplar = candidate
+
+    return best_exemplar
 
 def delete_redundant_solutions(fronts):
     """

@@ -1,24 +1,18 @@
 from .base import Evolution, Individual
-from .utils import fast_non_dominated_sort, delete_redundant_solutions, calculate_crowding_distance
+from .utils import fast_non_dominated_sort, delete_redundant_solutions, calculate_crowding_distance, get_exemplar_dbesm
 import numpy as np
 import random
 
 
 class MMOEA_DL(Evolution):
-    def __init__(self, evaluator, pop_size=100, max_gen=200, F=0.5, CR=0.9, seed=None):
-        super().__init__(evaluator)
+    def __init__(self, instance, dist_matrix, evaluator, pop_size=100, max_gen=200, F=0.5, CR=0.9):
+        super().__init__(instance, dist_matrix, evaluator)
         self.pop_size = pop_size
         self.max_gen = max_gen
 
         # DE Parameters
         self.F = F  # Mutation scaling factor
         self.CR = CR  # Crossover probability
-
-        # Seed Management
-        self.seed = seed if seed is not None else random.randint(0, 2**32 - 1)
-        random.seed(self.seed)
-        np.random.seed(self.seed)
-        print(f"--> Initialized MMOEA_DL | Seed: {self.seed}")
 
     def solve(self):
         # 1. Initialization
@@ -27,7 +21,6 @@ class MMOEA_DL(Evolution):
         fronts = [[]]
 
         for gen in range(self.max_gen):
-            print(f"Generation {gen + 1}/{self.max_gen}")
             assert len(population) == self.pop_size
 
             # 2. Reproduction (DE Mutation & Crossover)
@@ -43,6 +36,9 @@ class MMOEA_DL(Evolution):
 
             # 5. Environmental Selection
             population = self._environmental_selection(fronts)
+
+            print(f"Generation {gen + 1}/{self.max_gen} complete")
+            print(fronts[0][0])
 
         return fronts  # Returns the final Pareto Fronts
 
@@ -71,16 +67,18 @@ class MMOEA_DL(Evolution):
         offspring = []
 
         # Sort population once for the simplified DBESM elite pool
-        sorted_pop = sorted(population, key=lambda x: (x.total_penalty, x.f1_distance))
-        elite_pool = sorted_pop[:max(1, self.pop_size // 10)]
+        # sorted_pop = sorted(population, key=lambda x: (x.total_penalty, x.f1_distance))
+        # elite_pool = sorted_pop[:max(1, self.pop_size // 10)]
 
         for i, parent in enumerate(population):
             # Select 2 random distinct individuals
             r1, r2 = random.sample([x for j, x in enumerate(population) if j != i], 2)
 
             # Simplified DBESM
-            # TODO: Full DBESM
-            exemplar = random.choice(elite_pool)
+            # exemplar = random.choice(elite_pool)
+
+            # Full DBESM
+            exemplar = get_exemplar_dbesm(parent, population)
 
             # DE Mutation
             v = parent.chromosome + self.F * (exemplar.chromosome - parent.chromosome) + self.F * (

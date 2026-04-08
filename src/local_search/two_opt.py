@@ -1,4 +1,5 @@
 from .base import LocalSearch
+from .utils import is_new_seq_better
 
 
 class TwoOptLocalSearch(LocalSearch):
@@ -8,7 +9,6 @@ class TwoOptLocalSearch(LocalSearch):
     """
 
     def optimize(self, route):
-        route.update_state()
         improved = True
         while improved:
             improved = False
@@ -16,34 +16,22 @@ class TwoOptLocalSearch(LocalSearch):
 
             for i in range(1, n - 2):
                 for j in range(i + 1, n - 1):
-                    cost_before = route.cost
-                    tw_penalties_before = route.tw_penalties
+                    candidate_sequence = self._swap_sequence(route.sequence, i, j)
 
-                    self._swap(route, i, j)
-
-                    cost_after = route.cost
-                    tw_penalties_after = route.tw_penalties
-
-                    # ACCEPTANCE CRITERIA
-                    # 1. If it strictly reduces penalties (moving towards feasibility), ACCEPT.
-                    # 2. If penalties are the same (or both 0), but cost is reduced, ACCEPT.
-                    is_better = False
-                    if tw_penalties_after < tw_penalties_before:
-                        is_better = True
-                    elif tw_penalties_after == tw_penalties_before and cost_after < cost_before:
-                        is_better = True
+                    is_better = is_new_seq_better(route.sequence, candidate_sequence, self.dist_matrix,
+                                            self.instance.capacity)
 
                     if is_better:
+                        route.sequence = candidate_sequence
                         improved = True
                         break  # Break inner loop
-                    else:
-                        # Revert the swap
-                        self._swap(route, i, j)
 
                 if improved:
                     break  # Break outer loop to restart the while loop
 
-    def _swap(self, route, i, j):
-        sequence = route.sequence
-        sequence[i:j + 1] = reversed(sequence[i:j + 1])
         route.update_state()
+
+    def _swap_sequence(self, seq, i, j):
+        sequence = seq.copy()
+        sequence[i:j + 1] = reversed(sequence[i:j + 1])
+        return sequence
