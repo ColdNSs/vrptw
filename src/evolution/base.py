@@ -61,6 +61,10 @@ class Individual:
 
         return canonical_allocation
 
+    def __repr__(self):
+        return (f"Ind(Distance={self.f1_distance}, Makespan={self.f2_makespan}, Penalty={self.total_penalty}, "
+                f"Routes={self.routes})")
+
 
 class Evaluator:
     """
@@ -87,7 +91,7 @@ class Evaluator:
         individual.f2_makespan = 0.0
 
         # Lower Level Optimization for each vehicle
-        for vehicle_id, customer_ids in allocation.items():
+        for vehicle_id, customer_ids in enumerate(allocation):
             if not customer_ids:
                 continue  # Skip empty vehicles
 
@@ -99,7 +103,6 @@ class Evaluator:
 
             # 3. Aggregate Penalties using the weights
             route_penalty = (self.w_load * route.load_penalty) + (self.w_time * route.tw_penalties)
-
             individual.total_penalty += route_penalty
 
             individual.routes.append(route)
@@ -127,6 +130,6 @@ class Evolution(ABC):
         self.dist_matrix = evaluator.dist_matrix
 
     @abstractmethod
-    def solve(self) -> list[Individual]:
-        """Return a list of Individual objects."""
+    def solve(self) -> list[list[Individual]]:
+        """Return a list of Pareto Fronts."""
         ...

@@ -24,9 +24,11 @@ class MMOEA_DL(Evolution):
         # 1. Initialization
         population = self._initialize_population()
         self._evaluate_population(population)
+        fronts = [[]]
 
         for gen in range(self.max_gen):
             print(f"Generation {gen + 1}/{self.max_gen}")
+            assert len(population) == self.pop_size
 
             # 2. Reproduction (DE Mutation & Crossover)
             offspring_population = self._generate_offspring(population)
@@ -42,13 +44,18 @@ class MMOEA_DL(Evolution):
             # 5. Environmental Selection
             population = self._environmental_selection(fronts)
 
-        return population  # Returns the final Pareto Fronts
+        return fronts  # Returns the final Pareto Fronts
 
     def _initialize_population(self):
+        size = self.pop_size
+        population = self._generate_population(size)
+        return population
+
+    def _generate_population(self, size):
         num_tasks = len(self.instance.nodes) - 1  # Number of client nodes
         num_vehicles = self.instance.num_vehicles  # Number of vehicles
         population = []
-        for _ in range(self.pop_size):
+        for _ in range(size):
             new_ind = Individual(num_tasks, num_vehicles)
 
             # Generate random array using seeded randomness
@@ -115,16 +122,23 @@ class MMOEA_DL(Evolution):
                 # The whole front fits
                 next_population.extend(front)
                 remain -= len(front)
-            else:
+            elif remain > 0:
                 # The front is too large, we must select the most diverse individuals
                 # TODO: change to CSCD
-                calculate_crowding_distance(front)
+                crowding_distance = calculate_crowding_distance(front)
 
                 # Sort descending by crowding distance (larger distance = more isolated/diverse = better)
-                front.sort(key=lambda x: x.crowding_distance, reverse=True)
+                front.sort(key=lambda x: crowding_distance[x], reverse=True)
 
                 next_population.extend(front[:remain])
                 remain = 0
                 break
+
+        # When too much redundant individuals are deleted, add random immigrants to prevent population shrinking
+        if remain > 0:
+            print(f"  [!] Injecting {remain} random individuals to maintain population size.")
+            immigrants = self._generate_population(remain)
+            self._evaluate_population(immigrants)
+            next_population.extend(immigrants)
 
         return next_population

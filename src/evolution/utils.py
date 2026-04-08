@@ -36,7 +36,7 @@ def fast_non_dominated_sort(population):
             fronts[0].append(p)
 
     i = 0
-    while len(fronts[i]) > 0:
+    while True:
         next_front = []
         for p in fronts[i]:
             for q in p.dominated_solutions:
@@ -47,6 +47,8 @@ def fast_non_dominated_sort(population):
         i += 1
         if len(next_front) > 0:
             fronts.append(next_front)
+        else:
+            break
 
     return fronts
 
@@ -74,35 +76,36 @@ def calculate_crowding_distance(front):
     Standard NSGA-II Crowding Distance in Objective Space.
     """
     num_inds = len(front)
-    for ind in front:
-        ind.crowding_distance = 0.0
+    crowding_distance = {ind: 0.0 for ind in front}
 
     if num_inds <= 2:
         for ind in front:
-            ind.crowding_distance = float('inf')
-        return
+            crowding_distance[ind] = float('inf')
+        return crowding_distance
 
     # Optimize over f1 (Distance)
     front.sort(key=lambda x: x.f1_distance)
-    front[0].crowding_distance = float('inf')
-    front[-1].crowding_distance = float('inf')
+    crowding_distance[front[0]] = float('inf')
+    crowding_distance[front[-1]] = float('inf')
 
     f1_min, f1_max = front[0].f1_distance, front[-1].f1_distance
     f1_range = f1_max - f1_min if f1_max - f1_min > 0 else 1.0
 
     for i in range(1, num_inds - 1):
-        front[i].crowding_distance += (front[i + 1].f1_distance - front[i - 1].f1_distance) / f1_range
+        crowding_distance[front[i]] += (front[i + 1].f1_distance - front[i - 1].f1_distance) / f1_range
 
     # Optimize over f2 (Makespan)
     front.sort(key=lambda x: x.f2_makespan)
-    front[0].crowding_distance = float('inf')
-    front[-1].crowding_distance = float('inf')
+    crowding_distance[front[0]] = float('inf')
+    crowding_distance[front[-1]] = float('inf')
 
     f2_min, f2_max = front[0].f2_makespan, front[-1].f2_makespan
     f2_range = f2_max - f2_min if f2_max - f2_min > 0 else 1.0
 
     for i in range(1, num_inds - 1):
-        front[i].crowding_distance += (front[i + 1].f2_makespan - front[i - 1].f2_makespan) / f2_range
+        crowding_distance[front[i]] += (front[i + 1].f2_makespan - front[i - 1].f2_makespan) / f2_range
+
+    return crowding_distance
 
 # Being how much time late is as bad as being 1 unit overweight?
 def calculate_penalty_weights(instance):
