@@ -21,3 +21,16 @@ TODO:
 - All classes takes instance and dist_matrix
 - No load penalty for LNS
 '''
+
+import torch
+
+if torch.backends.mps.is_available():
+    device = torch.device("mps")
+    print("Metal (MPS) backend is available! Using GPU.")
+else:
+    device = torch.device("cpu")
+    print("MPS not available. Falling back to CPU.")
+
+# Test it
+x = torch.rand(5, 5).to(device)
+print(f"Tensor is on device: {x.device}")

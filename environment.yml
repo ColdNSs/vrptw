@@ -9,4 +9,5 @@ dependencies:
   - scipy
   - networkx
   - tqdm
+  - pytorch
 prefix: /opt/anaconda3/envs/vrptw

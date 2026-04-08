@@ -56,8 +56,8 @@ def lower_level_test(instance, dist_matrix):
 def mmoea_dl_test(instance, dist_matrix):
     print(f"--- MMOEA-DL Test ---")
 
-    instance.nodes = instance.nodes[:26]
-    print(f"Cropped instance to the first 25 customers")
+    instance.nodes = instance.nodes[:51]
+    print(f"Cropped instance to the first 50 customers")
 
     w_load, w_time = calculate_penalty_weights(instance)
 
@@ -65,7 +65,7 @@ def mmoea_dl_test(instance, dist_matrix):
     local_search = TwoOptLocalSearch(instance, dist_matrix)
     # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30)
     evaluator = Evaluator(instance, dist_matrix, solver, local_search, w_load, w_time)
-    mmoea_dl = MMOEA_DL(instance, dist_matrix, evaluator, max_gen=400)
+    mmoea_dl = MMOEA_DL(instance, dist_matrix, evaluator, max_gen=1000)
     fronts = mmoea_dl.solve()
 
     # Print top 10 fronts
