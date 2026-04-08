@@ -87,7 +87,7 @@ def main():
     dist_matrix = calculate_euclidean_matrix(instance.nodes)
     print(f"Loaded instance: {instance}")
 
-    apply_seed()
+    apply_seed(3081261258)
 
     lower_level_test(instance, dist_matrix)
 

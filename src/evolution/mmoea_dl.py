@@ -37,8 +37,13 @@ class MMOEA_DL(Evolution):
             # 5. Environmental Selection
             population = self._environmental_selection(fronts)
 
-            print(f"Generation {gen + 1}/{self.max_gen} complete")
-            print(fronts[0][0])
+            sample_ind = fronts[0][0]
+            f1_distance = sample_ind.f1_distance
+            f2_makespan = sample_ind.f2_makespan
+            total_penalty = sample_ind.total_penalty
+            sample_str = (f"SampleInd(Distance={f1_distance:.2f}, Makespan={f2_makespan:.2f}, "
+                          f"Penalty={total_penalty:.2f})")
+            print(f"Generation {gen + 1}/{self.max_gen} completed. {sample_str}")
 
         return fronts  # Returns the final Pareto Fronts
 

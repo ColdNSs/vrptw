@@ -95,6 +95,7 @@ def delete_redundant_solutions(fronts):
     """
     clean_fronts = []
     seen_signatures = set()
+    deletion_count = 0
 
     for front in fronts:
         clean_front = []
@@ -103,10 +104,13 @@ def delete_redundant_solutions(fronts):
                 seen_signatures.add(ind.signature)
                 clean_front.append(ind)
             else:
-                print(f"  [!] Seen signature. Remove individual from the front.")
+                deletion_count += 1
 
         if len(clean_front) > 0:
             clean_fronts.append(clean_front)
+
+    if deletion_count:
+        print(f"  [!] Removed {deletion_count} redundant individual(s) from the fronts.")
 
     return clean_fronts
 
