@@ -20,29 +20,26 @@ def fast_non_dominated_sort(population):
     Sorts the population into Pareto fronts based on Constrained Dominance.
     """
     fronts = [[]]
+    domination_count = {ind: 0 for ind in population}
+    dominated_solutions = {ind: [] for ind in population}
 
     for p in population:
-        p.domination_count = 0
-        p.dominated_solutions = []
-
         for q in population:
             if dominates(p, q):
-                p.dominated_solutions.append(q)
+                dominated_solutions[p].append(q)
             elif dominates(q, p):
-                p.domination_count += 1
+                domination_count[p] += 1
 
-        if p.domination_count == 0:
-            p.rank = 0
+        if domination_count[p] == 0:
             fronts[0].append(p)
 
     i = 0
     while True:
         next_front = []
         for p in fronts[i]:
-            for q in p.dominated_solutions:
-                q.domination_count -= 1
-                if q.domination_count == 0:
-                    q.rank = i + 1
+            for q in dominated_solutions[p]:
+                domination_count[q] -= 1
+                if domination_count[q] == 0:
                     next_front.append(q)
         i += 1
         if len(next_front) > 0:
