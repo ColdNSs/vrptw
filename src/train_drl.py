@@ -2,6 +2,7 @@ import torch
 import torch.optim as optim
 import torch.nn.functional as F
 from torch.distributions import Categorical
+import os
 import numpy as np
 
 import sys
@@ -81,10 +82,10 @@ class DRLTrainer:
                 # 4. Rollout Loop (Algorithm 1, Lines 6-9)
                 for i in range(self.num_nodes):
                     # Get probabilities from Actor
-                    probs, log_probs, hidden_state = self.actor(static_features, dynamic_context, mask, hidden_state)
+                    probs, log_probs, attn_scores, hidden_state = self.actor(static_features, dynamic_context, mask, hidden_state)
 
                     # SAMPLING: We don't use argmax in training! We roll the weighted dice.
-                    m = Categorical(probs)
+                    m = Categorical(logits=attn_scores)
                     action = m.sample()  # Shape: (Batch,)
                     actions_list.append(action)
 
@@ -248,8 +249,5 @@ class DRLTrainer:
 
 
 if __name__ == "__main__":
-    import os
-
-    os.makedirs("checkpoints", exist_ok=True)
     trainer = DRLTrainer()
     trainer.train()

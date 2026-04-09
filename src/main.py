@@ -1,6 +1,9 @@
 import sys
 from pathlib import Path
 
+import torch
+from torch.utils.checkpoint import checkpoint
+
 # Get repo root (one level above src/)
 root = Path(__file__).resolve().parent.parent
 
@@ -10,11 +13,11 @@ sys.path.insert(0, str(root))
 import numpy as np
 import random
 from src.parser import read_solomon_instance
-from src.utils import calculate_euclidean_matrix
-from src.utils import calculate_penalty_weights
-from solvers import GreedySolver
-from local_search import TwoOptLocalSearch, LNSLocalSearch
+from src.utils import calculate_euclidean_matrix, calculate_penalty_weights, get_device
+from solvers import GreedySolver, DRLSolver
+from local_search import TwoOptLocalSearch, LNSLocalSearch, NoLocalSearch
 from evolution import Evaluator, MMOEA_DL
+from models import ActorNetwork
 from copy import deepcopy, copy
 
 
@@ -53,6 +56,32 @@ def lower_level_test(instance, dist_matrix):
     local_search.optimize(route_copy)
     print(f"LNS: {route_copy}")
 
+def lower_level_drl(instance, dist_matrix):
+    print(f"--- Lower-level Test: DRL and 2-opt ---")
+
+    # Upper-level allocation
+
+    # Expected result:
+    # Greedy: [0, 27, 69, 1, 50, 77, 3, 0]
+    # After 2-opt: [0, 27, 69, 1, 50, 3, 77, 0]
+    test_nodes = [1, 3, 27, 50, 69, 77]
+
+    unvisited = [instance.nodes[i] for i in test_nodes]
+
+    # Lower-level: repeatedly run greedy solver on all unvisited nodes
+    device = get_device()
+    checkpoint_path = root / "checkpoints" / "actor_epoch_20.pt"
+    drl_actor = ActorNetwork().to(device)
+    drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    solver = DRLSolver(instance, dist_matrix, drl_actor, device)
+    route = solver.solve(unvisited)
+    print(f"DRL: {route}")
+
+    # Lower-level: use 2-opt to optimize each route
+    local_search = TwoOptLocalSearch(instance, dist_matrix)
+    local_search.optimize(route)
+    print(f"2-opt: {route}")
+
 def mmoea_dl_test(instance, dist_matrix):
     print(f"--- MMOEA-DL Test ---")
 
@@ -61,9 +90,16 @@ def mmoea_dl_test(instance, dist_matrix):
 
     w_load, w_time = calculate_penalty_weights(instance)
 
-    solver = GreedySolver(instance, dist_matrix)
+    device = get_device()
+    checkpoint_path = root / "checkpoints" / "actor_epoch_20.pt"
+    drl_actor = ActorNetwork().to(device)
+    drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    solver = DRLSolver(instance, dist_matrix, drl_actor, device)
+
+    # solver = GreedySolver(instance, dist_matrix)
+    # local_search = NoLocalSearch(instance, dist_matrix)
+    # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30, removal_fraction=0.3)
     local_search = TwoOptLocalSearch(instance, dist_matrix)
-    # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30)
     evaluator = Evaluator(instance, dist_matrix, solver, local_search, w_load, w_time)
     mmoea_dl = MMOEA_DL(instance, dist_matrix, evaluator, max_gen=1000)
     fronts = mmoea_dl.solve()
@@ -90,6 +126,8 @@ def main():
     apply_seed(42)
 
     lower_level_test(instance, dist_matrix)
+
+    lower_level_drl(instance, dist_matrix)
 
     mmoea_dl_test(instance, dist_matrix)
 

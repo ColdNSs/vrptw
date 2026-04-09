@@ -15,17 +15,21 @@ class DRLSolver(Solver):
         self.max_time = max(n.due_date for n in self.instance.nodes)
         self.capacity = self.instance.capacity
 
-    def solve(self, assigned_node_ids):
-        if not assigned_node_ids:
-            return Route(self.instance, self.dist_matrix)
-
+    def solve(self, assigned_nodes):
         route = Route(self.instance, self.dist_matrix)
 
+        # Do not perform inference on 1-node tasks
+        if len(assigned_nodes) == 1:
+            route.add_node(assigned_nodes[0])
+            route.close_route()
+            route.update_state()
+            return route
+
         # 1. Static features: shape (1, Num_Nodes, 5)
-        static_features = self._extract_static_tensor(assigned_node_ids)
+        static_features = self._extract_static_tensor(assigned_nodes)
 
         # 2. Initialize Mask: shape (1, Num_Nodes)
-        mask = torch.zeros((1, len(assigned_node_ids)), dtype=torch.bool, device=self.device)
+        mask = torch.zeros((1, len(assigned_nodes)), dtype=torch.bool, device=self.device)
 
         # Initialize hidden state for the GRU memory
         hidden_state = None
@@ -46,7 +50,7 @@ class DRLSolver(Solver):
             # 4. Neural network inference
             with torch.no_grad():
                 # Pass hidden_state back into the network to maintain memory
-                probs, log_probs, hidden_state = self.actor_network(
+                probs, log_probs, attn_scores, hidden_state = self.actor_network(
                     static_features, context, mask, hidden_state
                 )
 
@@ -55,8 +59,7 @@ class DRLSolver(Solver):
             next_idx = torch.argmax(probs, dim=1).item()
 
             # 5. Map back to Python object
-            best_node_id = assigned_node_ids[next_idx]
-            best_node = self.instance.nodes[best_node_id]
+            best_node = assigned_nodes[next_idx]
 
             # 6. Update route and mask
             route.add_node(best_node)

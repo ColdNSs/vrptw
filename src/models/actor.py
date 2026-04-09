@@ -61,4 +61,4 @@ class ActorNetwork(nn.Module):
         probs = F.softmax(attn_scores, dim=1)
         log_probs = F.log_softmax(attn_scores, dim=1)
 
-        return probs, log_probs, hidden_state
+        return probs, log_probs, attn_scores, hidden_state
