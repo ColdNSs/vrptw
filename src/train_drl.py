@@ -3,7 +3,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.distributions import Categorical
 import os
-import numpy as np
+import random
 
 import sys
 from pathlib import Path
@@ -20,10 +20,14 @@ from src.utils import get_device
 
 
 class DRLTrainer:
-    def __init__(self, num_nodes=20, batch_size=256, lr=5e-4, epochs=20, steps_per_epoch=1000):
+    def __init__(self, min_num_nodes=5, max_num_nodes=20, batch_size=256, lr=5e-4, epochs=20, steps_per_epoch=1000):
+        if min_num_nodes < 3:
+            raise ValueError("min_num_nodes should be at least 3")
         self.device = get_device()
-        self.num_nodes = num_nodes
+        self.min_num_nodes = min_num_nodes
+        self.max_num_nodes = max_num_nodes
         self.batch_size = batch_size
+        self.epoch = 0
         self.epochs = epochs
         self.steps_per_epoch = steps_per_epoch
 
@@ -35,7 +39,7 @@ class DRLTrainer:
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=lr)
         self.critic_optimizer = optim.Adam(self.critic.parameters(), lr=lr)
 
-    def generate_batch_data(self):
+    def generate_batch_data(self, current_num_nodes):
         """
         Generates a batch of random synthetic VRPTW clusters.
         In reality, you generate random[x, y, demand, ready, due_date]
@@ -43,13 +47,13 @@ class DRLTrainer:
         """
         # Shape: (Batch_Size, Num_Nodes, 5 features)
         # Node 0 in dim=1 is always the depot.
-        static_features = torch.rand((self.batch_size, self.num_nodes, 5), device=self.device)
+        static_features = torch.rand((self.batch_size, current_num_nodes, 5), device=self.device)
         return static_features
 
     def train(self):
         print(f"Starting DRL Training on {self.device}...")
 
-        for epoch in range(self.epochs):
+        while self.epoch < self.epochs:
             actor_loss_sum = 0.0
             critic_loss_sum = 0.0
             avg_reward = 0.0
@@ -59,28 +63,33 @@ class DRLTrainer:
 
             for step in range(self.steps_per_epoch):
                 # 1. Generate N random problem instances (Algorithm 1, Line 4)
-                static_features = self.generate_batch_data()
+                current_num_nodes = random.randint(self.min_num_nodes, self.max_num_nodes)
+                static_features = self.generate_batch_data(current_num_nodes)
 
                 # 2. Reset gradients (Algorithm 1, Line 3)
                 self.actor_optimizer.zero_grad()
                 self.critic_optimizer.zero_grad()
 
                 # 3. Initial State Setup
-                # Start at the depot (Node 0) for all 256 batches
-                current_node_idx = torch.zeros(self.batch_size, dtype=torch.long, device=self.device)
-
                 # Context: [curr_x, curr_y, time, load]. Initially matches Depot features.
                 dynamic_context = static_features[:, 0, :4].unsqueeze(1)  # Shape: (Batch, 1, 4)
 
-                mask = torch.zeros((self.batch_size, self.num_nodes), dtype=torch.bool, device=self.device)
+                mask = torch.zeros((self.batch_size, current_num_nodes), dtype=torch.bool, device=self.device)
+                # Mask the depot (Node 0)
+                mask[:, 0] = True
+
                 hidden_state = None
 
                 # Variables to track the episode
                 log_probs_list = []
                 actions_list = []
 
+                # Start at the depot
+                depot_starts = torch.zeros(self.batch_size, dtype=torch.long, device=self.device)
+                actions_list.append(depot_starts)
+
                 # 4. Rollout Loop (Algorithm 1, Lines 6-9)
-                for i in range(self.num_nodes):
+                for i in range(current_num_nodes - 1):
                     # Get probabilities from Actor
                     probs, log_probs, attn_scores, hidden_state = self.actor(static_features, dynamic_context, mask, hidden_state)
 
@@ -107,6 +116,8 @@ class DRLTrainer:
 
                     # We glue them back together into a fresh (Batch, 1, 4) tensor
                     dynamic_context = torch.cat([new_x, new_y, old_time, old_load], dim=2)
+
+                actions_list.append(depot_starts)
 
                 # 5. Compute the Reward 'L' (Algorithm 1, Line 10)
                 # Note: You must calculate the total batched distance + penalties here.
@@ -140,15 +151,17 @@ class DRLTrainer:
                 critic_loss_sum += critic_loss.item()
                 avg_reward += rewards.mean().item()
 
-            print(f"Epoch {epoch + 1}/{self.epochs} | Actor Loss: {actor_loss_sum / self.steps_per_epoch:.4f} | "
+            print(f"Epoch {self.epoch + 1}/{self.epochs} | Actor Loss: {actor_loss_sum / self.steps_per_epoch:.4f} | "
                   f"Critic Loss: {critic_loss_sum / self.steps_per_epoch:.4f} | Avg Cost: {avg_reward / self.steps_per_epoch:.4f}")
 
             # Save Checkpoints
             checkpoints_path = root / "checkpoints"
-            torch.save(self.actor.state_dict(), checkpoints_path / f"actor_epoch_{epoch + 1}.pt")
-            torch.save(self.critic.state_dict(), checkpoints_path / f"critic_epoch_{epoch + 1}.pt")
-            torch.save(self.actor_optimizer.state_dict(), checkpoints_path / f"actor_opt_epoch_{epoch + 1}.pt")
-            torch.save(self.actor_optimizer.state_dict(), checkpoints_path / f"critic_opt_epoch_{epoch + 1}.pt")
+            torch.save(self.actor.state_dict(), checkpoints_path / f"actor_epoch_{self.epoch + 1}.pt")
+            torch.save(self.critic.state_dict(), checkpoints_path / f"critic_epoch_{self.epoch + 1}.pt")
+            torch.save(self.actor_optimizer.state_dict(), checkpoints_path / f"actor_opt_epoch_{self.epoch + 1}.pt")
+            torch.save(self.critic_optimizer.state_dict(), checkpoints_path / f"critic_opt_epoch_{self.epoch + 1}.pt")
+
+            self.epoch += 1
 
     def _calculate_batched_rewards(self, static_features, actions_list):
         """
@@ -247,7 +260,19 @@ class DRLTrainer:
             self.critic_optimizer.load_state_dict(torch.load(critic_opt_path, map_location=self.device))
             print(f"--> Successfully loaded Critic Optimizer: {critic_opt_path}")
 
+    def load_epoch(self, epoch):
+        if epoch < 1:
+            raise ValueError("Invalid epoch number")
+        actor_name = f"actor_epoch_{epoch}.pt"
+        critic_name = f"critic_epoch_{epoch}.pt"
+        actor_opt_name = f"actor_opt_epoch_{epoch}.pt"
+        critic_opt_name = f"critic_opt_epoch_{epoch}.pt"
+
+        self.load_weights(actor_name, critic_name, actor_opt_name, critic_opt_name)
+        self.epoch = epoch
+
 
 if __name__ == "__main__":
-    trainer = DRLTrainer()
+    trainer = DRLTrainer(epochs=100)
+    trainer.load_epoch(20)
     trainer.train()
