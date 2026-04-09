@@ -17,6 +17,7 @@ class LNSLocalSearch(LocalSearch):
     def optimize(self, route):
         num_customers = len(route.sequence) - 2  # Exclude start and end depots
         if num_customers <= 2:
+            route.update_state()
             return  # Too short to optimize
 
         # We keep track of the best sequence found so far

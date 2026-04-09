@@ -11,10 +11,10 @@ import numpy as np
 import random
 from src.parser import read_solomon_instance
 from src.utils import calculate_euclidean_matrix
-from src.solvers import GreedySolver
-from src.local_search import TwoOptLocalSearch, LNSLocalSearch
-from src.evolution import Evaluator, MMOEA_DL
 from src.utils import calculate_penalty_weights
+from solvers import GreedySolver
+from local_search import TwoOptLocalSearch, LNSLocalSearch
+from evolution import Evaluator, MMOEA_DL
 from copy import deepcopy, copy
 
 

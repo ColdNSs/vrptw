@@ -1,6 +1,5 @@
 from .base import Solver
 from src.route import Route
-from src.utils import calculate_euclidean_matrix
 
 
 class GreedySolver(Solver):

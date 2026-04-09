@@ -19,3 +19,9 @@ Thumbs.db
 
 # Data
 #data/
+
+# Model checkpoints
+checkpoints/
+
+# Logs, plots, TensorBoard metrics
+experiments/

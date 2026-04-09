@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 
 
 def calculate_euclidean_matrix(nodes):
@@ -48,3 +49,14 @@ def assess_sequence(seq, dist_matrix, capacity):
         time = max(arrival_time, next_node.ready_time)
 
     return total_dist, time, max(0.0, total_load - capacity), tw_penalties
+
+def get_device():
+    """
+    Returns the optimal PyTorch device (MPS for Apple Silicon, CUDA for Nvidia, CPU fallback).
+    """
+    if torch.backends.mps.is_available():
+        return torch.device("mps")
+    elif torch.cuda.is_available():
+        return torch.device("cuda")
+    else:
+        return torch.device("cpu")
