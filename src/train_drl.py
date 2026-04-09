@@ -1,0 +1,255 @@
+import torch
+import torch.optim as optim
+import torch.nn.functional as F
+from torch.distributions import Categorical
+import numpy as np
+
+import sys
+from pathlib import Path
+
+# Get repo root (one level above src/)
+root = Path(__file__).resolve().parent.parent
+
+# Add vrptw root to path so 'src' is importable as a package
+sys.path.insert(0, str(root))
+
+from models.actor import ActorNetwork
+from models.critic import CriticNetwork
+from src.utils import get_device
+
+
+class DRLTrainer:
+    def __init__(self, num_nodes=20, batch_size=256, lr=5e-4, epochs=20, steps_per_epoch=1000):
+        self.device = get_device()
+        self.num_nodes = num_nodes
+        self.batch_size = batch_size
+        self.epochs = epochs
+        self.steps_per_epoch = steps_per_epoch
+
+        # 1. Initialize Networks (Algorithm 1, Line 1)
+        self.actor = ActorNetwork().to(self.device)
+        self.critic = CriticNetwork().to(self.device)
+
+        # 2. Adam Optimizers for both networks
+        self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=lr)
+        self.critic_optimizer = optim.Adam(self.critic.parameters(), lr=lr)
+
+    def generate_batch_data(self):
+        """
+        Generates a batch of random synthetic VRPTW clusters.
+        In reality, you generate random[x, y, demand, ready, due_date]
+        For training, all values should be normalized between 0 and 1.
+        """
+        # Shape: (Batch_Size, Num_Nodes, 5 features)
+        # Node 0 in dim=1 is always the depot.
+        static_features = torch.rand((self.batch_size, self.num_nodes, 5), device=self.device)
+        return static_features
+
+    def train(self):
+        print(f"Starting DRL Training on {self.device}...")
+
+        for epoch in range(self.epochs):
+            actor_loss_sum = 0.0
+            critic_loss_sum = 0.0
+            avg_reward = 0.0
+
+            self.actor.train()
+            self.critic.train()
+
+            for step in range(self.steps_per_epoch):
+                # 1. Generate N random problem instances (Algorithm 1, Line 4)
+                static_features = self.generate_batch_data()
+
+                # 2. Reset gradients (Algorithm 1, Line 3)
+                self.actor_optimizer.zero_grad()
+                self.critic_optimizer.zero_grad()
+
+                # 3. Initial State Setup
+                # Start at the depot (Node 0) for all 256 batches
+                current_node_idx = torch.zeros(self.batch_size, dtype=torch.long, device=self.device)
+
+                # Context: [curr_x, curr_y, time, load]. Initially matches Depot features.
+                dynamic_context = static_features[:, 0, :4].unsqueeze(1)  # Shape: (Batch, 1, 4)
+
+                mask = torch.zeros((self.batch_size, self.num_nodes), dtype=torch.bool, device=self.device)
+                hidden_state = None
+
+                # Variables to track the episode
+                log_probs_list = []
+                actions_list = []
+
+                # 4. Rollout Loop (Algorithm 1, Lines 6-9)
+                for i in range(self.num_nodes):
+                    # Get probabilities from Actor
+                    probs, log_probs, hidden_state = self.actor(static_features, dynamic_context, mask, hidden_state)
+
+                    # SAMPLING: We don't use argmax in training! We roll the weighted dice.
+                    m = Categorical(probs)
+                    action = m.sample()  # Shape: (Batch,)
+                    actions_list.append(action)
+
+                    # Store the log probability of the chosen action for the Loss function
+                    selected_log_probs = log_probs[torch.arange(self.batch_size), action]
+                    log_probs_list.append(selected_log_probs)
+
+                    # Update Mask
+                    mask = mask.clone()
+                    mask[torch.arange(self.batch_size), action] = True
+
+                    # Dynamic Context
+                    selected_features = static_features[torch.arange(self.batch_size), action]
+                    # We extract the components as individual (Batch, 1, 1) tensors
+                    new_x = selected_features[:, 0:1].unsqueeze(1)
+                    new_y = selected_features[:, 1:2].unsqueeze(1)
+                    old_time = dynamic_context[:, :, 2:3]
+                    old_load = dynamic_context[:, :, 3:4]
+
+                    # We glue them back together into a fresh (Batch, 1, 4) tensor
+                    dynamic_context = torch.cat([new_x, new_y, old_time, old_load], dim=2)
+
+                # 5. Compute the Reward 'L' (Algorithm 1, Line 10)
+                # Note: You must calculate the total batched distance + penalties here.
+                # For this skeleton, we pretend we have a function that returns the costs.
+                rewards = self._calculate_batched_rewards(static_features, actions_list)  # Shape: (Batch, 1)
+
+                # 6. Get Critic Baseline 'E'
+                # Pass the initial map and depot context to the critic
+                initial_context = static_features[:, 0, :4].unsqueeze(1)
+                baseline = self.critic(static_features, initial_context)  # Shape: (Batch, 1)
+
+                # 7. Calculate Advantage
+                # Advantage = Actual Reward (Cost) - Baseline Expectation
+                # We detach() the baseline so Actor gradients don't flow backward into the Critic!
+                advantage = rewards - baseline.detach()
+
+                # 8. Calculate Losses (Algorithm 1, Lines 12 & 13)
+                sum_log_probs = torch.stack(log_probs_list, dim=1).sum(dim=1).unsqueeze(-1)  # (Batch, 1)
+
+                actor_loss = -(advantage * sum_log_probs).mean() # Negative because we maximize reward
+                critic_loss = F.mse_loss(baseline, rewards)
+
+                # 9. Backpropagation (Algorithm 1, Lines 14 & 15)
+                actor_loss.backward()
+                critic_loss.backward()
+
+                self.actor_optimizer.step()
+                self.critic_optimizer.step()
+
+                actor_loss_sum += actor_loss.item()
+                critic_loss_sum += critic_loss.item()
+                avg_reward += rewards.mean().item()
+
+            print(f"Epoch {epoch + 1}/{self.epochs} | Actor Loss: {actor_loss_sum / self.steps_per_epoch:.4f} | "
+                  f"Critic Loss: {critic_loss_sum / self.steps_per_epoch:.4f} | Avg Cost: {avg_reward / self.steps_per_epoch:.4f}")
+
+            # Save Checkpoints
+            checkpoints_path = root / "checkpoints"
+            torch.save(self.actor.state_dict(), checkpoints_path / f"actor_epoch_{epoch + 1}.pt")
+            torch.save(self.critic.state_dict(), checkpoints_path / f"critic_epoch_{epoch + 1}.pt")
+            torch.save(self.actor_optimizer.state_dict(), checkpoints_path / f"actor_opt_epoch_{epoch + 1}.pt")
+            torch.save(self.actor_optimizer.state_dict(), checkpoints_path / f"critic_opt_epoch_{epoch + 1}.pt")
+
+    def _calculate_batched_rewards(self, static_features, actions_list):
+        """
+        Translates routing logic to highly parallel GPU operations.
+        static_features: (Batch, Num_Nodes, 5) -> [x, y, demand, ready_time, due_date]
+        actions_list: A list of length Num_Nodes, where each element is a tensor of shape (Batch,)
+        """
+        batch_size = static_features.shape[0]
+        num_nodes = len(actions_list)
+
+        # 1. Stack the actions into a single sequence matrix
+        # Shape: (Batch, Num_Nodes)
+        # E.g., Row 0: [0, 4, 2, 3, 1] (The sequence of node indices for map 0)
+        route_seq = torch.stack(actions_list, dim=1)
+
+        # 2. Gather the features for the nodes in the order they were visited
+        # We use advanced indexing to rearrange the static_features based on route_seq
+        # batch_idx is just [[0], [1], ..., [255]] to keep the batches aligned
+        batch_idx = torch.arange(batch_size, device=self.device).unsqueeze(1)
+
+        # ordered_features Shape: (Batch, Num_Nodes, 5)
+        ordered_features = static_features[batch_idx, route_seq]
+
+        # 3. Calculate Batched Distances
+        # We extract the X, Y coordinates: Shape (Batch, Num_Nodes, 2)
+        coords = ordered_features[:, :, :2]
+
+        # Distance from Node i to Node i+1
+        # coords[:, 1:] are the destinations, coords[:, :-1] are the origins
+        segment_diffs = coords[:, 1:] - coords[:, :-1]
+        segment_distances = torch.norm(segment_diffs, p=2, dim=2)  # Euclidean distance
+
+        # Total distance for each route (Shape: Batch)
+        total_distances = segment_distances.sum(dim=1)
+
+        # 4. Calculate Batched Time Windows (Sequential across the 20 nodes)
+        # Even though it's a loop, it runs purely on GPU tensors for all 256 batches at once!
+        current_times = ordered_features[:, 0, 3]  # Start at Node 0's ready_time
+        tw_penalties = torch.zeros(batch_size, device=self.device)
+
+        for k in range(num_nodes - 1):
+            # Distance for this specific step k across all 256 batches
+            dist_step = segment_distances[:, k]
+
+            # Service time of the node we are leaving (Feature index 5 is normally service time,
+            # assuming 0 here if not in the basic 5 features, but let's assume instantaneous for the skeleton)
+            # departure = current_times + service_times
+            departure_times = current_times
+
+            arrival_times = departure_times + dist_step
+
+            next_due_dates = ordered_features[:, k + 1, 4]
+            next_ready_times = ordered_features[:, k + 1, 3]
+
+            # Penalty calculation using torch.clamp (only keeps positive differences)
+            lateness = arrival_times - next_due_dates
+            tw_penalties += torch.clamp(lateness, min=0.0)
+
+            # Update current time: max(arrival_time, ready_time)
+            current_times = torch.max(arrival_times, next_ready_times)
+
+        # 5. Final Reward Calculation
+        # Multiply TW penalty by the same weight factor we used in LNS
+        penalty_weight = 100.0
+        total_score = total_distances + (penalty_weight * tw_penalties)
+
+        # Reward is Negative Score (because PyTorch optimizes gradients by maximizing expected return)
+        # We return it with shape (Batch, 1) so it matches the Critic's output dimension
+        rewards = -total_score.unsqueeze(1)
+
+        return rewards
+
+    def load_weights(self, actor_name, critic_name, actor_opt_name=None, critic_opt_name=None):
+        """
+        Loads pre-trained weights into the Actor and Critic networks,
+        and optionally restores optimizer momentum states.
+        """
+
+        actor_path = root / "checkpoints" / actor_name
+        critic_path = root / "checkpoints" / critic_name
+        actor_opt_path = root / "checkpoints" / actor_opt_name if actor_opt_name else None
+        critic_opt_path = root / "checkpoints" / critic_opt_name if critic_opt_name else None
+
+        # 1. Load Model Weights
+        if os.path.exists(actor_path) and os.path.exists(critic_path):
+            self.actor.load_state_dict(torch.load(actor_path, map_location=self.device))
+            self.critic.load_state_dict(torch.load(critic_path, map_location=self.device))
+            print(f"--> Successfully loaded networks:\n  Actor: {actor_path}\n  Critic: {critic_path}")
+
+        # 2. Load Optimizer States (If provided)
+        if actor_opt_path and os.path.exists(actor_opt_path):
+            self.actor_optimizer.load_state_dict(torch.load(actor_opt_path, map_location=self.device))
+            print(f"--> Successfully loaded Actor Optimizer: {actor_opt_path}")
+
+        if critic_opt_path and os.path.exists(critic_opt_path):
+            self.critic_optimizer.load_state_dict(torch.load(critic_opt_path, map_location=self.device))
+            print(f"--> Successfully loaded Critic Optimizer: {critic_opt_path}")
+
+
+if __name__ == "__main__":
+    import os
+
+    os.makedirs("checkpoints", exist_ok=True)
+    trainer = DRLTrainer()
+    trainer.train()
