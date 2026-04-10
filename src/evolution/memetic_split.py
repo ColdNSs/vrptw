@@ -5,7 +5,7 @@ from .utils import fast_non_dominated_sort, delete_redundant_solutions, calculat
 
 
 class MemeticEA(BaseEvolution):
-    def __init__(self, instance, dist_matrix, evaluator, heuristic_init=0.1, pop_size=100, max_gen=200, F=0.5, CR=0.9):
+    def __init__(self, instance, dist_matrix, evaluator, heuristic_init=0.1, pop_size=100, max_gen=200, F=0.2, CR=0.9):
         super().__init__(instance, dist_matrix, evaluator)
         self.heuristic_init = heuristic_init
         self.pop_size = pop_size
@@ -30,6 +30,8 @@ class MemeticEA(BaseEvolution):
 
             # 3. Combine
             combined_pop = population + offspring_population
+
+            self.evaluator.update_penalty_weights(combined_pop)
 
             # 4. Sorting & Redundancy Deletion
             fronts, rank, _ = fast_non_dominated_sort(combined_pop)
@@ -229,9 +231,14 @@ class RandomKeyIndividual(BaseIndividual):
         # 2. Extract and sort the ORIGINAL continuous keys
         sorted_keys = np.sort(self.chromosome)
 
+        noise = np.random.uniform(-0.05, 0.05, size=len(sorted_keys))
+        sorted_keys = np.sort(sorted_keys + noise)
+
         # 3. Assign the smallest keys to the earliest nodes in the optimized tour
         for sequence_index, customer_id in enumerate(optimized_tour):
             self.chromosome[customer_id - 1] = sorted_keys[sequence_index]
+
+        self.decode()
 
     def __repr__(self):
         return (f"{self.__class__.__name__}(Dist={self.f1_distance:.2f}, MSpan={self.f2_makespan:.2f}, "
@@ -389,3 +396,23 @@ class SplitEvaluator(BaseEvaluator):
 
         slices.reverse()
         return slices
+
+    def update_penalty_weights(self, population):
+        """
+        Dynamically tilts the fitness landscape (Adaptive Penalty Weights).
+        This logic is universal regardless of how individuals are decoded.
+        """
+        feasible_fleet_count = sum(1 for ind in population if ind.fleet_penalty == 0)
+        feasible_tw_count = sum(1 for ind in population if ind.tw_penalty == 0)
+
+        pop_size = len(population)
+
+        if feasible_fleet_count > pop_size * 0.8 and feasible_tw_count < pop_size * 0.2:
+            self.w_time *= 1.2
+            self.w_fleet *= 0.9
+        elif feasible_tw_count > pop_size * 0.8 and feasible_fleet_count < pop_size * 0.2:
+            self.w_fleet *= 1.2
+            self.w_time *= 0.9
+
+        self.w_fleet = max(0.1, min(self.w_fleet, 1000.0))
+        self.w_time = max(0.1, min(self.w_time, 1000.0))

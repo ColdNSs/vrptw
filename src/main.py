@@ -14,9 +14,10 @@ from src.parser import read_solomon_instance
 from src.utils import calculate_euclidean_matrix, calculate_penalty_weights, get_device
 from src.route import Route
 
-from solvers import GreedySolver, DRLSolver
+from solvers import GreedySolver, DRLSolver, SequentialSolver
 from local_search import TwoOptLocalSearch, LNSLocalSearch, NoLocalSearch
 from evolution import MMOEA_DL_Evaluator, MMOEA_DL, MemeticEA, SplitEvaluator
+from evolution.utils import delete_redundant_solutions
 from models import ActorNetwork
 from copy import deepcopy, copy
 
@@ -61,7 +62,7 @@ def lower_level_drl(instance, dist_matrix):
 
     # Upper-level allocation
 
-    # Expected result:
+    # Expected result on r102:
     # Greedy: [0, 27, 69, 1, 50, 77, 3, 0]
     # After 2-opt: [0, 27, 69, 1, 50, 3, 77, 0]
     test_nodes = [1, 3, 27, 50, 69, 77]
@@ -132,16 +133,18 @@ def memetic_test(instance, dist_matrix):
     # drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
     # solver = DRLSolver(instance, dist_matrix, drl_actor, device)
     solver = GreedySolver(instance, dist_matrix)
+    # solver = SequentialSolver(instance, dist_matrix)
 
     # local_search = NoLocalSearch(instance, dist_matrix)
     # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30, removal_fraction=0.3)
     local_search = TwoOptLocalSearch(instance, dist_matrix)
 
     evaluator = SplitEvaluator(instance, dist_matrix, solver, local_search, w_fleet, w_time)
-    mematic = MemeticEA(instance, dist_matrix, evaluator, pop_size=100, max_gen=100)
+    mematic = MemeticEA(instance, dist_matrix, evaluator, pop_size=100, max_gen=500, F=0.2)
     fronts = mematic.solve()
 
     # Print top 10 fronts
+    fronts = delete_redundant_solutions(fronts)
     for i, front in enumerate(fronts):
         if i > 9:
             break
@@ -173,7 +176,7 @@ def main():
     dist_matrix = calculate_euclidean_matrix(instance.nodes)
     print(f"Loaded instance: {instance}")
 
-    apply_seed(3461784699)
+    apply_seed()
 
     lower_level_test(instance, dist_matrix)
 
