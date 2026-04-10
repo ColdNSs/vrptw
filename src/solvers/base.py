@@ -13,3 +13,10 @@ class Solver(ABC):
     def solve(self, unvisited) -> List:
         """Return a list of Route objects."""
         ...
+
+    def solve_batch(self, unvisited_lists):
+        """
+        Default fallback for heuristic solvers (like Greedy).
+        DRL will override this to perform GPU batching.
+        """
+        return[self.solve(unvisited) for unvisited in unvisited_lists]

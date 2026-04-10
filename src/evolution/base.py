@@ -81,7 +81,7 @@ class Evaluator:
 
     def evaluate(self, individual):
         """
-        Calculates f1 and f2 for an individual.
+        Calculates f1 and f2 for an individual. (Legacy)
         """
         allocation = individual.decode()
         individual.routes = []
@@ -116,9 +116,63 @@ class Evaluator:
         individual.f2_makespan = max(r.finish_time for r in individual.routes)
 
     def _solve_lower_level(self, customer_ids):
+        """
+        Calls lower-level. (Legacy)
+        """
         unvisited = [self.instance.nodes[i] for i in customer_ids]
         route = self.solver.solve(unvisited)
         return route
+
+    def evaluate_population(self, population):
+        """
+        Evaluates the entire population simultaneously to leverage GPU batching.
+        """
+        all_unvisited = []
+        route_mapping = []  # Tracks which route belongs to which individual
+
+        # 1. GATHER: Decode everyone and collect all tasks
+        for ind_idx, individual in enumerate(population):
+            allocation = individual.decode()
+            individual.routes = []
+            individual.total_penalty = 0.0
+            individual.f1_distance = 0.0
+            individual.f2_makespan = 0.0
+
+            for vehicle_id, customer_ids in enumerate(allocation):
+                if not customer_ids:
+                    continue  # Skip empty vehicles
+
+                # Fetch node objects
+                unvisited = [self.instance.nodes[i] for i in customer_ids]
+                all_unvisited.append(unvisited)
+                route_mapping.append(ind_idx)
+
+        # 2. BATCHED SOLVE: Hand all tasks to the solver at once
+        if not all_unvisited:
+            return
+
+        # Greedy will loop this. DRL will run it in parallel
+        solved_routes = self.solver.solve_batch(all_unvisited)
+
+        # 3. SCATTER: Apply local search and map routes back to their individuals
+        for route, ind_idx in zip(solved_routes, route_mapping):
+            # Local search
+            self.local_search.optimize(route)
+
+            # Aggregate Penalties
+            route_penalty = (self.w_load * route.load_penalty) + (self.w_time * route.tw_penalties)
+
+            ind = population[ind_idx]
+            ind.total_penalty += route_penalty
+            ind.routes.append(route)
+
+        # 4. Finalize Objectives
+        for individual in population:
+            if not individual.routes:
+                individual.total_penalty = float('inf')
+            else:
+                individual.f1_distance = sum(r.cost for r in individual.routes)
+                individual.f2_makespan = max(r.finish_time for r in individual.routes)
 
 
 class Evolution(ABC):

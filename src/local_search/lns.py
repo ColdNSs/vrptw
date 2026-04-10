@@ -9,7 +9,7 @@ class LNSLocalSearch(LocalSearch):
     Uses Destroy (Removal) and Repair (Greedy Insertion) operators.
     """
 
-    def __init__(self, instance, dist_matrix, max_iters=30, removal_fraction=0.4):
+    def __init__(self, instance, dist_matrix, max_iters=30, removal_fraction=0.3):
         super().__init__(instance, dist_matrix)
         self.max_iters = max_iters
         self.removal_fraction = removal_fraction

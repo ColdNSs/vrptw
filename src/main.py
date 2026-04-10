@@ -1,9 +1,6 @@
 import sys
 from pathlib import Path
 
-import torch
-from torch.utils.checkpoint import checkpoint
-
 # Get repo root (one level above src/)
 root = Path(__file__).resolve().parent.parent
 
@@ -11,9 +8,12 @@ root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(root))
 
 import numpy as np
+import torch
 import random
 from src.parser import read_solomon_instance
 from src.utils import calculate_euclidean_matrix, calculate_penalty_weights, get_device
+from src.route import Route
+
 from solvers import GreedySolver, DRLSolver
 from local_search import TwoOptLocalSearch, LNSLocalSearch, NoLocalSearch
 from evolution import Evaluator, MMOEA_DL
@@ -91,17 +91,19 @@ def mmoea_dl_test(instance, dist_matrix):
     w_load, w_time = calculate_penalty_weights(instance)
 
     device = get_device()
+    print(f"Loading weights to device: {device}")
     checkpoint_path = root / "checkpoints" / "actor_epoch_20.pt"
     drl_actor = ActorNetwork().to(device)
     drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
     solver = DRLSolver(instance, dist_matrix, drl_actor, device)
-
     # solver = GreedySolver(instance, dist_matrix)
-    # local_search = NoLocalSearch(instance, dist_matrix)
+
+    local_search = NoLocalSearch(instance, dist_matrix)
     # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30, removal_fraction=0.3)
-    local_search = TwoOptLocalSearch(instance, dist_matrix)
+    # local_search = TwoOptLocalSearch(instance, dist_matrix)
+
     evaluator = Evaluator(instance, dist_matrix, solver, local_search, w_load, w_time)
-    mmoea_dl = MMOEA_DL(instance, dist_matrix, evaluator, max_gen=1000)
+    mmoea_dl = MMOEA_DL(instance, dist_matrix, evaluator, pop_size=50, max_gen=200)
     fronts = mmoea_dl.solve()
 
     # Print top 10 fronts
@@ -111,6 +113,19 @@ def mmoea_dl_test(instance, dist_matrix):
         print(f"Front {i + 1}:")
         for ind in front:
             print(ind)
+
+def best_solution_test(instance, dist_matrix):
+    print(f"--- Best Solution Test ---")
+
+    route = Route(instance, dist_matrix)
+    client_sequence = [98, 96, 95, 94, 92, 93, 97, 100, 99]
+    for client_id in client_sequence:
+        node = instance.nodes[client_id]
+        route.add_node(node)
+    route.close_route()
+    route.update_state()
+    print(route)
+
 
 def main():
     print("VRPTW environment ready")
@@ -129,8 +144,9 @@ def main():
 
     lower_level_drl(instance, dist_matrix)
 
-    # mmoea_dl_test(instance, dist_matrix)
+    mmoea_dl_test(instance, dist_matrix)
 
+    # best_solution_test(instance, dist_matrix)
 
 if __name__ == "__main__":
     main()

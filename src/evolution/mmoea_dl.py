@@ -112,8 +112,7 @@ class MMOEA_DL(Evolution):
         return offspring
 
     def _evaluate_population(self, population):
-        for ind in population:
-            self.evaluator.evaluate(ind)
+        self.evaluator.evaluate_population(population)
 
     def _environmental_selection(self, fronts):
         """
