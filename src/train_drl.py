@@ -20,12 +20,13 @@ from src.utils import get_device
 
 
 class DRLTrainer:
-    def __init__(self, min_num_nodes=5, max_num_nodes=20, batch_size=256, lr=5e-4, epochs=20, steps_per_epoch=1000):
+    def __init__(self, min_num_nodes=5, max_num_nodes=20, cluster=0.5, batch_size=256, lr=5e-4, epochs=20, steps_per_epoch=1000):
         if min_num_nodes < 3:
             raise ValueError("min_num_nodes should be at least 3")
         self.device = get_device()
         self.min_num_nodes = min_num_nodes
         self.max_num_nodes = max_num_nodes
+        self.cluster =cluster
         self.batch_size = batch_size
         self.epoch = 0
         self.epochs = epochs
@@ -39,7 +40,7 @@ class DRLTrainer:
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=lr)
         self.critic_optimizer = optim.Adam(self.critic.parameters(), lr=lr)
 
-    def generate_batch_data(self, current_num_nodes):
+    def generate_batch_data(self, current_num_nodes, cluster):
         """
         Generates a batch of random synthetic VRPTW clusters.
         In reality, you generate random[x, y, demand, ready, due_date, service_time]
@@ -48,6 +49,24 @@ class DRLTrainer:
         # Shape: (Batch_Size, Num_Nodes, 6 features)
         # Node 0 in dim=1 is always the depot.
         static_features = torch.rand((self.batch_size, current_num_nodes, 6), device=self.device)
+
+        # We pick 3 random "cluster centers" for the batch
+        centers = torch.rand((self.batch_size, 3, 2), device=self.device)
+
+        # For half the batch, we overwrite the X,Y coords with clustered coords
+        half_b = int(self.batch_size * cluster)
+
+        if half_b:
+
+            # Randomly assign each node to one of the 3 centers
+            cluster_assignments = torch.randint(0, 3, (half_b, current_num_nodes), device=self.device)
+
+            # Gather the center coords and add narrow Gaussian noise (0.1) to create tight clusters
+            gathered_centers = torch.gather(centers[:half_b], 1, cluster_assignments.unsqueeze(-1).expand(-1, -1, 2))
+            clustered_coords = gathered_centers + (torch.randn((half_b, current_num_nodes, 2), device=self.device) * 0.1)
+
+            # Clip to [0,1] bounds and assign to the first half of the batch
+            static_features[:half_b, :, :2] = torch.clamp(clustered_coords, 0.0, 1.0)
 
         # Force service times to be relatively small
         # so the vehicle doesn't spend its entire day at 1 node.
@@ -69,7 +88,7 @@ class DRLTrainer:
             for step in range(self.steps_per_epoch):
                 # 1. Generate N random problem instances (Algorithm 1, Line 4)
                 current_num_nodes = random.randint(self.min_num_nodes, self.max_num_nodes)
-                static_features = self.generate_batch_data(current_num_nodes)
+                static_features = self.generate_batch_data(current_num_nodes, self.cluster)
 
                 # 2. Reset gradients (Algorithm 1, Line 3)
                 self.actor_optimizer.zero_grad()
@@ -272,6 +291,6 @@ class DRLTrainer:
 
 
 if __name__ == "__main__":
-    trainer = DRLTrainer(epochs=40, max_num_nodes=50)
-    trainer.load_epoch(20)
+    trainer = DRLTrainer(epochs=60, max_num_nodes=50)
+    trainer.load_epoch(39)
     trainer.train()

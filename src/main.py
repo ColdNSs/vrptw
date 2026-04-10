@@ -92,7 +92,7 @@ def mmoea_dl_test(instance, dist_matrix):
 
     device = get_device()
     print(f"Loading weights to device: {device}")
-    checkpoint_path = root / "checkpoints" / "actor_epoch_37.pt"
+    checkpoint_path = root / "checkpoints" / "actor_epoch_60.pt"
     drl_actor = ActorNetwork().to(device)
     drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
     solver = DRLSolver(instance, dist_matrix, drl_actor, device)
