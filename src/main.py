@@ -16,7 +16,7 @@ from src.route import Route
 
 from solvers import GreedySolver, DRLSolver
 from local_search import TwoOptLocalSearch, LNSLocalSearch, NoLocalSearch
-from evolution import MMOEA_DL_Evaluator, MMOEA_DL
+from evolution import MMOEA_DL_Evaluator, MMOEA_DL, MemeticEA, SplitEvaluator
 from models import ActorNetwork
 from copy import deepcopy, copy
 
@@ -116,6 +116,39 @@ def mmoea_dl_test(instance, dist_matrix):
         for ind in front:
             print(ind)
 
+def memetic_test(instance, dist_matrix):
+    print(f"--- Memetic Split Test ---")
+
+    # instance.nodes = instance.nodes[:51]
+    # print(f"Cropped instance to the first 50 customers")
+
+    w_fleet = 200.0
+    w_time = 1.0
+
+    # device = get_device()
+    # print(f"Loading weights to device: {device}")
+    # checkpoint_path = root / "checkpoints" / "actor_epoch_60.pt"
+    # drl_actor = ActorNetwork().to(device)
+    # drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    # solver = DRLSolver(instance, dist_matrix, drl_actor, device)
+    solver = GreedySolver(instance, dist_matrix)
+
+    # local_search = NoLocalSearch(instance, dist_matrix)
+    # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30, removal_fraction=0.3)
+    local_search = TwoOptLocalSearch(instance, dist_matrix)
+
+    evaluator = SplitEvaluator(instance, dist_matrix, solver, local_search, w_fleet, w_time)
+    mematic = MemeticEA(instance, dist_matrix, evaluator, pop_size=100, max_gen=100)
+    fronts = mematic.solve()
+
+    # Print top 10 fronts
+    for i, front in enumerate(fronts):
+        if i > 9:
+            break
+        print(f"Front {i + 1}:")
+        for ind in front:
+            print(ind)
+
 def best_solution_test(instance, dist_matrix):
     print(f"--- Best Solution Test ---")
 
@@ -140,13 +173,15 @@ def main():
     dist_matrix = calculate_euclidean_matrix(instance.nodes)
     print(f"Loaded instance: {instance}")
 
-    apply_seed(42)
+    apply_seed(3461784699)
 
     lower_level_test(instance, dist_matrix)
 
     lower_level_drl(instance, dist_matrix)
 
-    mmoea_dl_test(instance, dist_matrix)
+    # mmoea_dl_test(instance, dist_matrix)
+
+    memetic_test(instance, dist_matrix)
 
     # best_solution_test(instance, dist_matrix)
 

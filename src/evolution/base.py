@@ -21,6 +21,7 @@ class BaseIndividual(ABC):
         # Constraints
         self.load_penalty = float('inf')
         self.tw_penalty = float('inf')
+        self.fleet_penalty = float('inf')
         self.total_penalty = float('inf')
 
         # Store the actual routes for this individual (Phenotype)
@@ -50,8 +51,8 @@ class BaseIndividual(ABC):
         pass
 
     def __repr__(self):
-        return (f"{self.__class__.__name__}(Dist={self.f1_distance:.2f}, Make={self.f2_makespan:.2f}, "
-                f"LoadPen={self.load_penalty:.2f}, TWPen={self.tw_penalty:.2f}, "
+        return (f"{self.__class__.__name__}(Dist={self.f1_distance:.2f}, MSpan={self.f2_makespan:.2f}, "
+                f"TotPen={self.total_penalty:.2f}, "
                 f"Routes={len(self.routes)})")
 
 
@@ -60,13 +61,11 @@ class BaseEvaluator(ABC):
     Abstract base class for the 'Bridge' between EA and Lower Level.
     """
 
-    def __init__(self, instance, dist_matrix, solver, local_search, w_load, w_time):
+    def __init__(self, instance, dist_matrix, solver, local_search):
         self.instance = instance
         self.dist_matrix = dist_matrix
         self.solver = solver
         self.local_search = local_search
-        self.w_load = w_load
-        self.w_time = w_time
 
     @abstractmethod
     def evaluate_population(self, population):
@@ -76,26 +75,6 @@ class BaseEvaluator(ABC):
         - Split MMOEA_DL_Evaluator: Runs Prins Split, routes the slices, and performs Lamarckian Write-back.
         """
         pass
-
-    def update_penalty_weights(self, population):
-        """
-        Dynamically tilts the fitness landscape (Adaptive Penalty Weights).
-        This logic is universal regardless of how individuals are decoded.
-        """
-        feasible_load_count = sum(1 for ind in population if ind.load_penalty == 0)
-        feasible_tw_count = sum(1 for ind in population if ind.tw_penalty == 0)
-
-        pop_size = len(population)
-
-        if feasible_load_count > pop_size * 0.8 and feasible_tw_count < pop_size * 0.2:
-            self.w_time *= 1.2
-            self.w_load *= 0.9
-        elif feasible_tw_count > pop_size * 0.8 and feasible_load_count < pop_size * 0.2:
-            self.w_load *= 1.2
-            self.w_time *= 0.9
-
-        self.w_load = max(0.1, min(self.w_load, 1000.0))
-        self.w_time = max(0.1, min(self.w_time, 1000.0))
 
 
 class BaseEvolution(ABC):

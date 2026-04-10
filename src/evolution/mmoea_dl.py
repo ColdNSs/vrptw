@@ -45,8 +45,8 @@ class MMOEA_DL(BaseEvolution):
             load_penalty = sample_ind.load_penalty
             tw_penalty = sample_ind.tw_penalty
             total_penalty = sample_ind.total_penalty
-            sample_str = (f"SampleInd(Distance={f1_distance:.2f}, Makespan={f2_makespan:.2f}, "
-                          f"Load_Penalty={load_penalty}, TW_Penalty={tw_penalty:.2f}, Total_Penalty={total_penalty:.2f})")
+            sample_str = (f"SampleInd(Dist={f1_distance:.2f}, MSpan={f2_makespan:.2f}, "
+                          f"LoadPen={load_penalty:.2f}, TWPen={tw_penalty:.2f}, TotPen={total_penalty:.2f}")
             print(f"Generation {gen + 1}/{self.max_gen} completed. {sample_str}")
 
         return fronts  # Returns the final Pareto Fronts
@@ -246,8 +246,18 @@ class MMOEA_DL_Individual(BaseIndividual):
 
         return canonical_allocation
 
+    def __repr__(self):
+        return (f"{self.__class__.__name__}(Dist={self.f1_distance:.2f}, MSpan={self.f2_makespan:.2f}, "
+                f"LoadPen={self.load_penalty:.2f}, TWPen={self.tw_penalty:.2f}, TotPen={self.total_penalty:.2f}, "
+                f"Routes={self.routes})")
+
 
 class MMOEA_DL_Evaluator(BaseEvaluator):
+    def __init__(self, instance, dist_matrix, solver, local_search, w_load, w_time):
+        super().__init__(instance, dist_matrix, solver, local_search)
+        self.w_load = w_load
+        self.w_time = w_time
+
     def evaluate(self, individual):
         """
         Calculates f1 and f2 for an individual. (Legacy)
@@ -345,3 +355,23 @@ class MMOEA_DL_Evaluator(BaseEvaluator):
                                            (self.w_time * individual.tw_penalty)
                 individual.f1_distance = sum(r.cost for r in individual.routes)
                 individual.f2_makespan = max(r.finish_time for r in individual.routes)
+
+    def update_penalty_weights(self, population):
+        """
+        Dynamically tilts the fitness landscape (Adaptive Penalty Weights).
+        This logic is universal regardless of how individuals are decoded.
+        """
+        feasible_load_count = sum(1 for ind in population if ind.load_penalty == 0)
+        feasible_tw_count = sum(1 for ind in population if ind.tw_penalty == 0)
+
+        pop_size = len(population)
+
+        if feasible_load_count > pop_size * 0.8 and feasible_tw_count < pop_size * 0.2:
+            self.w_time *= 1.2
+            self.w_load *= 0.9
+        elif feasible_tw_count > pop_size * 0.8 and feasible_load_count < pop_size * 0.2:
+            self.w_load *= 1.2
+            self.w_time *= 0.9
+
+        self.w_load = max(0.1, min(self.w_load, 1000.0))
+        self.w_time = max(0.1, min(self.w_time, 1000.0))
