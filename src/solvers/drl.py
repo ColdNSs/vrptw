@@ -15,6 +15,28 @@ class DRLSolver(BaseSolver):
         self.max_time = max(n.due_date for n in self.instance.nodes)
         self.capacity = self.instance.capacity
 
+        self._precompute_global_features()
+
+    def _precompute_global_features(self):
+        """
+        Creates a single Tensor containing the normalized features for ALL nodes
+        in the instance. Shape: (Total_Nodes, 6).
+        Stored permanently on the GPU.
+        """
+        features = []
+        # We assume self.instance.nodes is ordered by node.id (0 to N)
+        for node in self.instance.nodes:
+            norm_x = node.x / self.max_x if self.max_x > 0 else 0
+            norm_y = node.y / self.max_y if self.max_y > 0 else 0
+            norm_demand = node.demand / self.capacity if self.capacity > 0 else 0
+            norm_ready = node.ready_time / self.max_time if self.max_time > 0 else 0
+            norm_due = node.due_date / self.max_time if self.max_time > 0 else 0
+            norm_service = node.service_time / self.max_time if self.max_time > 0 else 0
+
+            features.append([norm_x, norm_y, norm_demand, norm_ready, norm_due, norm_service])
+
+        self.global_features = torch.tensor(features, dtype=torch.float32, device=self.device)
+
     def solve(self, assigned_nodes):
         route = Route(self.instance, self.dist_matrix)
 
@@ -29,7 +51,10 @@ class DRLSolver(BaseSolver):
             return route
 
         # 1. Static features: shape (1, Num_Nodes, 6)
-        static_features = self._extract_static_tensor(assigned_nodes)
+        # static_features = self._extract_static_tensor(assigned_nodes)
+        node_ids =[n.id for n in assigned_nodes]
+        indices = torch.tensor(node_ids, dtype=torch.long, device=self.device)
+        static_features = self.global_features[indices].unsqueeze(0)
 
         # 2. Initialize Mask: shape (1, Num_Nodes)
         mask = torch.zeros((1, len(assigned_nodes)), dtype=torch.bool, device=self.device)
@@ -95,22 +120,20 @@ class DRLSolver(BaseSolver):
         max_customers = max(len(u) for u in unvisited_lists)
         max_nodes = max_customers + 1  # +1 for the Depot
 
-        # 1. Initialize Padded Tensors
-        static_features = torch.zeros((batch_size, max_nodes, 6), dtype=torch.float32, device=self.device)
+        # 1. Initialize node indices
+        node_indices = torch.zeros((batch_size, max_nodes), dtype=torch.long, device=self.device)
 
         # Initialize mask as ALL TRUE (invalid). We will unmask the valid ones.
         mask = torch.ones((batch_size, max_nodes), dtype=torch.bool, device=self.device)
 
         # 2. Fill Tensors
         for b, unvisited in enumerate(unvisited_lists):
-            # Insert Depot at Index 0
-            static_features[b, 0, :] = self._get_node_features(self.instance.nodes[0])
             mask[b, 0] = True  # Mask depot so it's not visited mid-route
-
-            # Insert Customers
             for i, node in enumerate(unvisited):
-                static_features[b, i + 1, :] = self._get_node_features(node)
+                node_indices[b, i + 1] = node.id
                 mask[b, i + 1] = False  # Unmask valid customers
+
+        static_features = self.global_features[node_indices]
 
         # 3. Setup Routing State
         context = static_features[:, 0, :4].unsqueeze(1)  # Start at Depot
