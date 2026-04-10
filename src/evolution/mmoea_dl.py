@@ -1,11 +1,11 @@
-from .base import Evolution, Individual
+from .base import BaseEvolution, BaseIndividual, BaseEvaluator
 from .utils import fast_non_dominated_sort, delete_redundant_solutions, calculate_crowding_distance, get_exemplar_dbesm
 import numpy as np
 import random
 from scipy.cluster.vq import kmeans2
 
 
-class MMOEA_DL(Evolution):
+class MMOEA_DL(BaseEvolution):
     def __init__(self, instance, dist_matrix, evaluator, heuristic_init=0.1, pop_size=100, max_gen=200, F=0.5, CR=0.9):
         super().__init__(instance, dist_matrix, evaluator)
         self.heuristic_init = heuristic_init
@@ -66,7 +66,7 @@ class MMOEA_DL(Evolution):
         num_vehicles = self.instance.num_vehicles  # Number of vehicles
         population = []
         for _ in range(size):
-            new_ind = Individual(num_tasks, num_vehicles)
+            new_ind = MMOEA_DL_Individual(num_tasks, num_vehicles)
 
             # Generate random array using seeded randomness
             rand_chrom = np.random.uniform(0, num_vehicles, size=num_tasks)
@@ -98,7 +98,7 @@ class MMOEA_DL(Evolution):
         k_clusters = min(num_vehicles, num_tasks)
 
         for _ in range(size):
-            new_ind = Individual(num_tasks, num_vehicles)
+            new_ind = MMOEA_DL_Individual(num_tasks, num_vehicles)
 
             # 2. Inject Noise for Diversity
             # We want each heuristic individual to be slightly different.
@@ -164,7 +164,7 @@ class MMOEA_DL(Evolution):
             u[crossover_mask] = v[crossover_mask]
 
             # Create child safely using our new setter
-            child = Individual(num_tasks, num_vehicles)
+            child = MMOEA_DL_Individual(num_tasks, num_vehicles)
             child.set_chromosome(u)
             offspring.append(child)
 
@@ -205,3 +205,143 @@ class MMOEA_DL(Evolution):
             next_population.extend(immigrants)
 
         return next_population
+
+
+class MMOEA_DL_Individual(BaseIndividual):
+    """
+    Represents a single Task Allocation scheme in the Upper Level.
+    """
+
+    def set_chromosome(self, new_chromosome):
+        """
+        Safely assigns a new chromosome with strict dimension and boundary checks.
+        """
+        new_chromosome = np.array(new_chromosome, dtype=float)
+
+        # 1. Dimension Check
+        if len(new_chromosome) != self.num_tasks:
+            raise ValueError(f"Dimension mismatch: Expected {self.num_tasks}, got {len(new_chromosome)}")
+
+        # 2. Boundary Enforcement
+        # We clip to (num_vehicles - 1e-5) to guarantee np.floor() never returns num_vehicles
+        self.chromosome = np.clip(new_chromosome, 0.0, self.num_vehicles - 1e-5)
+
+    def decode(self):
+        """
+        Converts the continuous chromosome into discrete vehicle assignments.
+        Returns a list [[vehicle 0 list of customer ids], [vehicle 1 list of customer ids], ...]
+        """
+        assignments = np.floor(self.chromosome).astype(int)
+
+        groups = {}
+        for task_idx, v_id in enumerate(assignments):
+            customer_id = task_idx + 1
+            if v_id not in groups:
+                groups[v_id] = []
+            groups[v_id].append(customer_id)
+
+        raw_clusters = list(groups.values())
+        canonical_allocation = sorted([sorted(cluster) for cluster in raw_clusters if cluster])
+        self.signature = str(canonical_allocation)
+
+        return canonical_allocation
+
+
+class MMOEA_DL_Evaluator(BaseEvaluator):
+    def evaluate(self, individual):
+        """
+        Calculates f1 and f2 for an individual. (Legacy)
+        """
+        allocation = individual.decode()
+        individual.routes = []
+
+        individual.total_penalty = 0.0
+        individual.f1_distance = 0.0
+        individual.f2_makespan = 0.0
+
+        # Lower Level Optimization for each vehicle
+        for vehicle_id, customer_ids in enumerate(allocation):
+            if not customer_ids:
+                continue  # Skip empty vehicles
+
+            # 1. Route Construction
+            route = self._solve_lower_level(customer_ids)
+
+            # 2. Route Improvement
+            self.local_search.optimize(route)
+
+            # 3. Aggregate Penalties using the weights
+            route_penalty = (self.w_load * route.load_penalty) + (self.w_time * route.tw_penalties)
+            individual.total_penalty += route_penalty
+
+            individual.routes.append(route)
+
+        # Calculate Upper Level Objectives
+        if not individual.routes:
+            individual.total_penalty = float('inf')
+            return
+
+        individual.f1_distance = sum(r.cost for r in individual.routes)
+        individual.f2_makespan = max(r.finish_time for r in individual.routes)
+
+    def _solve_lower_level(self, customer_ids):
+        """
+        Calls lower-level. (Legacy)
+        """
+        unvisited = [self.instance.nodes[i] for i in customer_ids]
+        route = self.solver.solve(unvisited)
+        return route
+
+    def evaluate_population(self, population):
+        """
+        Evaluates the entire population simultaneously to leverage GPU batching.
+        """
+        all_unvisited = []
+        route_mapping = []  # Tracks which route belongs to which individual
+
+        # 1. GATHER: Decode everyone and collect all tasks
+        for ind_idx, individual in enumerate(population):
+            allocation = individual.decode()
+            individual.routes = []
+            individual.load_penalty = 0.0
+            individual.tw_penalty = 0.0
+            individual.total_penalty = float('inf')
+            individual.f1_distance = float('inf')
+            individual.f2_makespan = float('inf')
+
+            for vehicle_id, customer_ids in enumerate(allocation):
+                if not customer_ids:
+                    continue  # Skip empty vehicles
+
+                # Fetch node objects
+                unvisited = [self.instance.nodes[i] for i in customer_ids]
+                all_unvisited.append(unvisited)
+                route_mapping.append(ind_idx)
+
+        # 2. BATCHED SOLVE: Hand all tasks to the solver at once
+        if not all_unvisited:
+            return
+
+        # Greedy will loop this. DRL will run it in parallel
+        solved_routes = self.solver.solve_batch(all_unvisited)
+
+        # 3. SCATTER: Apply local search and map routes back to their individuals
+        for route, ind_idx in zip(solved_routes, route_mapping):
+            # Local search
+            self.local_search.optimize(route)
+
+            # Aggregate Penalties
+            ind = population[ind_idx]
+            ind.load_penalty += route.load_penalty
+            ind.tw_penalty += route.tw_penalties
+            ind.routes.append(route)
+
+        # 4. Finalize Objectives
+        # Optional: Adaptive penalty weights
+        # self.update_penalty_weights(population)
+        for individual in population:
+            if individual.routes:
+                individual.total_penalty = (self.w_load * individual.load_penalty) + \
+                                           (self.w_time * individual.tw_penalty)
+                individual.f1_distance = sum(r.cost for r in individual.routes)
+                individual.f2_makespan = max(r.finish_time for r in individual.routes)

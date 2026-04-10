@@ -1,8 +1,8 @@
-from .base import Solver
+from .base import BaseSolver
 from src.route import Route
 
 
-class GreedySolver(Solver):
+class GreedySolver(BaseSolver):
     """Nearest-neighbor heuristic with capacity + time window feasibility."""
 
     def __init__(self, instance, dist_matrix):

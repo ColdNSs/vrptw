@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List
 
 
-class Solver(ABC):
+class BaseSolver(ABC):
     """Abstract base for VRPTW solvers."""
 
     def __init__(self, instance, dist_matrix):

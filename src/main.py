@@ -16,7 +16,7 @@ from src.route import Route
 
 from solvers import GreedySolver, DRLSolver
 from local_search import TwoOptLocalSearch, LNSLocalSearch, NoLocalSearch
-from evolution import Evaluator, MMOEA_DL
+from evolution import MMOEA_DL_Evaluator, MMOEA_DL
 from models import ActorNetwork
 from copy import deepcopy, copy
 
@@ -104,7 +104,7 @@ def mmoea_dl_test(instance, dist_matrix):
     # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30, removal_fraction=0.3)
     local_search = TwoOptLocalSearch(instance, dist_matrix)
 
-    evaluator = Evaluator(instance, dist_matrix, solver, local_search, w_load, w_time)
+    evaluator = MMOEA_DL_Evaluator(instance, dist_matrix, solver, local_search, w_load, w_time)
     mmoea_dl = MMOEA_DL(instance, dist_matrix, evaluator, pop_size=100, max_gen=1000)
     fronts = mmoea_dl.solve()
 

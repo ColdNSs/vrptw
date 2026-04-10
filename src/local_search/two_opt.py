@@ -1,8 +1,8 @@
-from .base import LocalSearch
+from .base import BaseLocalSearch
 from .utils import is_new_seq_better
 
 
-class TwoOptLocalSearch(LocalSearch):
+class TwoOptLocalSearch(BaseLocalSearch):
     """
     2-opt local search operator.
     Swaps edges within a single route to reduce distance.

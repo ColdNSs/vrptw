@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class LocalSearch(ABC):
+class BaseLocalSearch(ABC):
     """Abstract base for route-level local search operators."""
 
     def __init__(self, instance, dist_matrix):

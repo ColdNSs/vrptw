@@ -32,7 +32,7 @@ Following the MMOEA-DL paradigm, we combine evolutionary exploration at the uppe
 - [x] Evaluation harness (metrics: route distance, total distance, finish time, makespan, time window penalties, etc.)
 
 ### Phase 2 — Bi-Level Structure
-- [x] `Evaluator` class handles two separate concerns:
+- [x] `MMOEA_DL_Evaluator` class handles two separate concerns:
   - **Upper solver**: Genetic algorithm / differential evolution for customer-to-route assignment
   - **Lower solver**: Sequence optimization within each route (replaces greedy)
 - [x] Proper bi-level fitness evaluation
@@ -42,7 +42,7 @@ Following the MMOEA-DL paradigm, we combine evolutionary exploration at the uppe
 - [ ] MMODE_CSCD crowding distance for diversity preservation
 - [x] Pareto front extraction and visualization
 
-### Phase 4 — DRL Lower-Level Solver (Nazari et al. approach)
+### Phase 4 — DRL Lower-Level BaseSolver (Nazari et al. approach)
 - [ ] Encoder-decoder with attention mechanism (GRU decoder)
 - [ ] Actor-Critic training on Solomon instances
 - [ ] End-to-end inference: given customer coordinates → optimal visiting order

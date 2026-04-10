@@ -1,9 +1,9 @@
-from .base import LocalSearch
+from .base import BaseLocalSearch
 from .utils import is_new_seq_better
 import random
 
 
-class LNSLocalSearch(LocalSearch):
+class LNSLocalSearch(BaseLocalSearch):
     """
     Large Neighborhood Search for a Single Route.
     Uses Destroy (Removal) and Repair (Greedy Insertion) operators.
