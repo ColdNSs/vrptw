@@ -25,7 +25,7 @@ class DRLSolver(Solver):
             route.update_state()
             return route
 
-        # 1. Static features: shape (1, Num_Nodes, 5)
+        # 1. Static features: shape (1, Num_Nodes, 6)
         static_features = self._extract_static_tensor(assigned_nodes)
 
         # 2. Initialize Mask: shape (1, Num_Nodes)
@@ -70,23 +70,22 @@ class DRLSolver(Solver):
 
         return route
 
-    def _extract_static_tensor(self, node_ids):
+    def _extract_static_tensor(self, nodes):
         """
         Extracts and normalizes features for the assigned nodes.
         Returns a FloatTensor of shape (1, Num_Nodes, 5).
         """
         features = []
-        for nid in node_ids:
-            node = self.instance.nodes[nid]
-
+        for node in nodes:
             # Normalize each feature to [0.0, 1.0]
             norm_x = node.x / self.max_x if self.max_x > 0 else 0
             norm_y = node.y / self.max_y if self.max_y > 0 else 0
             norm_demand = node.demand / self.capacity if self.capacity > 0 else 0
             norm_ready = node.ready_time / self.max_time if self.max_time > 0 else 0
             norm_due = node.due_date / self.max_time if self.max_time > 0 else 0
+            norm_service = node.service_time / self.max_time if self.max_time > 0 else 0
 
-            features.append([norm_x, norm_y, norm_demand, norm_ready, norm_due])
+            features.append([norm_x, norm_y, norm_demand, norm_ready, norm_due ,norm_service])
 
         # Convert to tensor, move to device, and add Batch dimension
         tensor = torch.tensor(features, dtype=torch.float32, device=self.device)

@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class CriticNetwork(nn.Module):
-    def __init__(self, static_input_dim=5, dynamic_input_dim=4, hidden_dim=128):
+    def __init__(self, static_input_dim=6, dynamic_input_dim=4, hidden_dim=128):
         super(CriticNetwork, self).__init__()
 
         # Encoders (Separate from the Actor so they learn independently)
@@ -16,7 +16,7 @@ class CriticNetwork(nn.Module):
 
     def forward(self, static_features, dynamic_context):
         """
-        static_features: (Batch, Num_Nodes, 5)
+        static_features: (Batch, Num_Nodes, 6)
         dynamic_context: (Batch, 1, 4)
         """
         static_hidden = self.static_encoder(static_features)  # (Batch, Num_Nodes, 128)

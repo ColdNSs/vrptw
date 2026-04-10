@@ -42,12 +42,17 @@ class DRLTrainer:
     def generate_batch_data(self, current_num_nodes):
         """
         Generates a batch of random synthetic VRPTW clusters.
-        In reality, you generate random[x, y, demand, ready, due_date]
+        In reality, you generate random[x, y, demand, ready, due_date, service_time]
         For training, all values should be normalized between 0 and 1.
         """
-        # Shape: (Batch_Size, Num_Nodes, 5 features)
+        # Shape: (Batch_Size, Num_Nodes, 6 features)
         # Node 0 in dim=1 is always the depot.
-        static_features = torch.rand((self.batch_size, current_num_nodes, 5), device=self.device)
+        static_features = torch.rand((self.batch_size, current_num_nodes, 6), device=self.device)
+
+        # Force service times to be relatively small
+        # so the vehicle doesn't spend its entire day at 1 node.
+        static_features[:, :, 5] = static_features[:, :, 5] * 0.05
+
         return static_features
 
     def train(self):
@@ -99,7 +104,7 @@ class DRLTrainer:
                     actions_list.append(action)
 
                     # Store the log probability of the chosen action for the Loss function
-                    selected_log_probs = log_probs[torch.arange(self.batch_size), action]
+                    selected_log_probs = m.log_prob(action)
                     log_probs_list.append(selected_log_probs)
 
                     # Update Mask
@@ -166,7 +171,7 @@ class DRLTrainer:
     def _calculate_batched_rewards(self, static_features, actions_list):
         """
         Translates routing logic to highly parallel GPU operations.
-        static_features: (Batch, Num_Nodes, 5) -> [x, y, demand, ready_time, due_date]
+        static_features: (Batch, Num_Nodes, 6) ->[x, y, demand, ready_time, due_date, service_time]
         actions_list: A list of length Num_Nodes, where each element is a tensor of shape (Batch,)
         """
         batch_size = static_features.shape[0]
@@ -174,15 +179,12 @@ class DRLTrainer:
 
         # 1. Stack the actions into a single sequence matrix
         # Shape: (Batch, Num_Nodes)
-        # E.g., Row 0: [0, 4, 2, 3, 1] (The sequence of node indices for map 0)
         route_seq = torch.stack(actions_list, dim=1)
 
         # 2. Gather the features for the nodes in the order they were visited
-        # We use advanced indexing to rearrange the static_features based on route_seq
-        # batch_idx is just [[0], [1], ..., [255]] to keep the batches aligned
         batch_idx = torch.arange(batch_size, device=self.device).unsqueeze(1)
 
-        # ordered_features Shape: (Batch, Num_Nodes, 5)
+        # ordered_features Shape: (Batch, Num_Nodes, 6)
         ordered_features = static_features[batch_idx, route_seq]
 
         # 3. Calculate Batched Distances
@@ -190,15 +192,13 @@ class DRLTrainer:
         coords = ordered_features[:, :, :2]
 
         # Distance from Node i to Node i+1
-        # coords[:, 1:] are the destinations, coords[:, :-1] are the origins
         segment_diffs = coords[:, 1:] - coords[:, :-1]
         segment_distances = torch.norm(segment_diffs, p=2, dim=2)  # Euclidean distance
 
         # Total distance for each route (Shape: Batch)
         total_distances = segment_distances.sum(dim=1)
 
-        # 4. Calculate Batched Time Windows (Sequential across the 20 nodes)
-        # Even though it's a loop, it runs purely on GPU tensors for all 256 batches at once!
+        # 4. Calculate Batched Time Windows (Sequential across the nodes)
         current_times = ordered_features[:, 0, 3]  # Start at Node 0's ready_time
         tw_penalties = torch.zeros(batch_size, device=self.device)
 
@@ -206,10 +206,11 @@ class DRLTrainer:
             # Distance for this specific step k across all 256 batches
             dist_step = segment_distances[:, k]
 
-            # Service time of the node we are leaving (Feature index 5 is normally service time,
-            # assuming 0 here if not in the basic 5 features, but let's assume instantaneous for the skeleton)
-            # departure = current_times + service_times
-            departure_times = current_times
+            # NEW: Extract the service time of the node we are LEAVING (Index 5)
+            service_times = ordered_features[:, k, 5]
+
+            # Departure = The time we started service + The duration of the service
+            departure_times = current_times + service_times
 
             arrival_times = departure_times + dist_step
 
@@ -224,12 +225,10 @@ class DRLTrainer:
             current_times = torch.max(arrival_times, next_ready_times)
 
         # 5. Final Reward Calculation
-        # Multiply TW penalty by the same weight factor we used in LNS
         penalty_weight = 100.0
         total_score = total_distances + (penalty_weight * tw_penalties)
 
-        # Reward is Negative Score (because PyTorch optimizes gradients by maximizing expected return)
-        # We return it with shape (Batch, 1) so it matches the Critic's output dimension
+        # Reward is Negative Score
         rewards = -total_score.unsqueeze(1)
 
         return rewards

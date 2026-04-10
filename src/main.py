@@ -117,7 +117,7 @@ def main():
     print("NumPy version:", np.__version__)
 
     # Build path relative to repo root
-    data_path = root / "data" / "benchmarks" / "solomon-100" / "r102.txt"
+    data_path = root / "data" / "benchmarks" / "solomon-100" / "c102.txt"
 
     instance = read_solomon_instance(data_path)
     dist_matrix = calculate_euclidean_matrix(instance.nodes)
@@ -129,7 +129,7 @@ def main():
 
     lower_level_drl(instance, dist_matrix)
 
-    mmoea_dl_test(instance, dist_matrix)
+    # mmoea_dl_test(instance, dist_matrix)
 
 
 if __name__ == "__main__":

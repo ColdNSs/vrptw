@@ -4,11 +4,11 @@ import torch.nn.functional as F
 
 
 class ActorNetwork(nn.Module):
-    def __init__(self, static_input_dim=5, dynamic_input_dim=4, hidden_dim=128):
+    def __init__(self, static_input_dim=6, dynamic_input_dim=4, hidden_dim=128):
         super(ActorNetwork, self).__init__()
 
         # 1. Static Encoder (Reads the map properties)
-        # Maps[x, y, demand, ready_time, due_date] -> 128-dim vector
+        # Maps[x, y, demand, ready_time, due_date, service_time] -> 128-dim vector
         self.static_encoder = nn.Linear(static_input_dim, hidden_dim)
 
         # 2. Dynamic Encoder (Reads the current state)
@@ -25,7 +25,7 @@ class ActorNetwork(nn.Module):
 
     def forward(self, static_features, dynamic_context, mask, hidden_state=None):
         """
-        static_features: Tensor of shape (Batch, Num_Nodes, 5)
+        static_features: Tensor of shape (Batch, Num_Nodes, 6)
         dynamic_context: Tensor of shape (Batch, 1, 4)
         mask: Boolean Tensor of shape (Batch, Num_Nodes). True means VISITED (invalid).
         """
