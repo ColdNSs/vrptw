@@ -85,21 +85,21 @@ def lower_level_drl(instance, dist_matrix):
 def mmoea_dl_test(instance, dist_matrix):
     print(f"--- MMOEA-DL Test ---")
 
-    instance.nodes = instance.nodes[:51]
-    print(f"Cropped instance to the first 50 customers")
+    # instance.nodes = instance.nodes[:51]
+    # print(f"Cropped instance to the first 50 customers")
 
     w_load, w_time = calculate_penalty_weights(instance)
 
     device = get_device()
     print(f"Loading weights to device: {device}")
-    checkpoint_path = root / "checkpoints" / "actor_epoch_20.pt"
+    checkpoint_path = root / "checkpoints" / "actor_epoch_37.pt"
     drl_actor = ActorNetwork().to(device)
     drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
     solver = DRLSolver(instance, dist_matrix, drl_actor, device)
     # solver = GreedySolver(instance, dist_matrix)
 
-    local_search = NoLocalSearch(instance, dist_matrix)
-    # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30, removal_fraction=0.3)
+    # local_search = NoLocalSearch(instance, dist_matrix)
+    local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30, removal_fraction=0.3)
     # local_search = TwoOptLocalSearch(instance, dist_matrix)
 
     evaluator = Evaluator(instance, dist_matrix, solver, local_search, w_load, w_time)

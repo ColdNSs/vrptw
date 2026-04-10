@@ -272,6 +272,6 @@ class DRLTrainer:
 
 
 if __name__ == "__main__":
-    trainer = DRLTrainer(epochs=100)
+    trainer = DRLTrainer(epochs=40, max_num_nodes=50)
     trainer.load_epoch(20)
     trainer.train()

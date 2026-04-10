@@ -2,11 +2,13 @@ from .base import Evolution, Individual
 from .utils import fast_non_dominated_sort, delete_redundant_solutions, calculate_crowding_distance, get_exemplar_dbesm
 import numpy as np
 import random
+from scipy.cluster.vq import kmeans2
 
 
 class MMOEA_DL(Evolution):
-    def __init__(self, instance, dist_matrix, evaluator, pop_size=100, max_gen=200, F=0.5, CR=0.9):
+    def __init__(self, instance, dist_matrix, evaluator, heuristic_init=0.1, pop_size=100, max_gen=200, F=0.5, CR=0.9):
         super().__init__(instance, dist_matrix, evaluator)
+        self.heuristic_init = heuristic_init
         self.pop_size = pop_size
         self.max_gen = max_gen
 
@@ -16,7 +18,7 @@ class MMOEA_DL(Evolution):
 
     def solve(self):
         # 1. Initialization
-        population = self._initialize_population()
+        population = self._initialize_population(self.heuristic_init)
         self._evaluate_population(population)
         fronts = [[]]
 
@@ -47,9 +49,14 @@ class MMOEA_DL(Evolution):
 
         return fronts  # Returns the final Pareto Fronts
 
-    def _initialize_population(self):
-        size = self.pop_size
-        population = self._generate_population(size)
+    def _initialize_population(self, structured_pop):
+        heuristic_size = max(1, int(self.pop_size * structured_pop))
+        random_size = self.pop_size - heuristic_size
+
+        pop_random = self._generate_population(random_size)
+        pop_heuristic = self._generate_heuristic_population(heuristic_size)
+
+        population = pop_random + pop_heuristic
         return population
 
     def _generate_population(self, size):
@@ -64,6 +71,56 @@ class MMOEA_DL(Evolution):
             new_ind.set_chromosome(rand_chrom)
 
             population.append(new_ind)
+        return population
+
+    def _generate_heuristic_population(self, size):
+        """
+        Uses Spatial-Temporal K-Means clustering to create smart initial allocations.
+        """
+        num_tasks = len(self.instance.nodes) - 1
+        num_vehicles = self.instance.num_vehicles
+        population = []
+
+        # 1. Extract and Normalize Spatial-Temporal Features[X, Y, Ready_Time]
+        max_x = max(n.x for n in self.instance.nodes)
+        max_y = max(n.y for n in self.instance.nodes)
+        max_t = max(n.due_date for n in self.instance.nodes)
+
+        base_features = np.zeros((num_tasks, 3))
+        for i, n in enumerate(self.instance.nodes[1:]):
+            base_features[i, 0] = n.x / max_x if max_x > 0 else 0
+            base_features[i, 1] = n.y / max_y if max_y > 0 else 0
+            base_features[i, 2] = n.ready_time / max_t if max_t > 0 else 0
+
+        # Determine K (We can't have more clusters than tasks)
+        k_clusters = min(num_vehicles, num_tasks)
+
+        for _ in range(size):
+            new_ind = Individual(num_tasks, num_vehicles)
+
+            # 2. Inject Noise for Diversity
+            # We want each heuristic individual to be slightly different.
+            # Adding 5% Gaussian noise shifts the cluster boundaries just enough to create distinct groupings.
+            noise = np.random.normal(0, 0.05, base_features.shape)
+            noisy_features = base_features + noise
+
+            # 3. K-Means Clustering
+            try:
+                # minit='points' randomly chooses initial centroids to further increase diversity
+                centroids, labels = kmeans2(noisy_features, k_clusters, minit='points')
+            except Exception:
+                # Fallback to random if K-Means fails (extremely rare edge case)
+                labels = np.random.randint(0, num_vehicles, size=num_tasks)
+
+            # 4. Map Discrete Labels back to Continuous Chromosomes
+            # If a task is assigned to Vehicle 2, its chromosome must be a float in[2.0, 3.0)
+            rand_offsets = np.random.uniform(0.0, 1 - 1e-5, size=num_tasks)
+            chrom = labels.astype(float) + rand_offsets
+
+            # Use our safe setter
+            new_ind.set_chromosome(chrom)
+            population.append(new_ind)
+
         return population
 
     def _generate_offspring(self, population):
