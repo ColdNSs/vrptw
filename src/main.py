@@ -89,21 +89,23 @@ def mmoea_dl_test(instance, dist_matrix):
     # print(f"Cropped instance to the first 50 customers")
 
     w_load, w_time = calculate_penalty_weights(instance)
+    # w_load = 1.0
+    # w_time = 100.0
 
-    device = get_device()
-    print(f"Loading weights to device: {device}")
-    checkpoint_path = root / "checkpoints" / "actor_epoch_60.pt"
-    drl_actor = ActorNetwork().to(device)
-    drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
-    solver = DRLSolver(instance, dist_matrix, drl_actor, device)
-    # solver = GreedySolver(instance, dist_matrix)
+    # device = get_device()
+    # print(f"Loading weights to device: {device}")
+    # checkpoint_path = root / "checkpoints" / "actor_epoch_60.pt"
+    # drl_actor = ActorNetwork().to(device)
+    # drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    # solver = DRLSolver(instance, dist_matrix, drl_actor, device)
+    solver = GreedySolver(instance, dist_matrix)
 
     # local_search = NoLocalSearch(instance, dist_matrix)
-    local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30, removal_fraction=0.3)
-    # local_search = TwoOptLocalSearch(instance, dist_matrix)
+    # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30, removal_fraction=0.3)
+    local_search = TwoOptLocalSearch(instance, dist_matrix)
 
     evaluator = Evaluator(instance, dist_matrix, solver, local_search, w_load, w_time)
-    mmoea_dl = MMOEA_DL(instance, dist_matrix, evaluator, pop_size=50, max_gen=200)
+    mmoea_dl = MMOEA_DL(instance, dist_matrix, evaluator, pop_size=100, max_gen=1000)
     fronts = mmoea_dl.solve()
 
     # Print top 10 fronts

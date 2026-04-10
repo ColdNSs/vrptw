@@ -19,6 +19,8 @@ class Individual:
         self.f2_makespan = float('inf')
 
         # Constraints
+        self.load_penalty = float('inf')
+        self.tw_penalty = float('inf')
         self.total_penalty = float('inf')
 
         # Store the actual routes for this individual
@@ -62,7 +64,8 @@ class Individual:
         return canonical_allocation
 
     def __repr__(self):
-        return (f"Ind(Distance={self.f1_distance:.2f}, Makespan={self.f2_makespan:.2f}, Penalty={self.total_penalty:.2f}, "
+        return (f"Ind(Distance={self.f1_distance:.2f}, Makespan={self.f2_makespan:.2f}, "
+                f"Load_Penalty={self.load_penalty}, TW_Penalty={self.tw_penalty:.2f}, Total_Penalty={self.total_penalty:.2f}, "
                 f"Routes={self.routes})")
 
 
@@ -134,9 +137,11 @@ class Evaluator:
         for ind_idx, individual in enumerate(population):
             allocation = individual.decode()
             individual.routes = []
-            individual.total_penalty = 0.0
-            individual.f1_distance = 0.0
-            individual.f2_makespan = 0.0
+            individual.load_penalty = 0.0
+            individual.tw_penalty = 0.0
+            individual.total_penalty = float('inf')
+            individual.f1_distance = float('inf')
+            individual.f2_makespan = float('inf')
 
             for vehicle_id, customer_ids in enumerate(allocation):
                 if not customer_ids:
@@ -160,19 +165,46 @@ class Evaluator:
             self.local_search.optimize(route)
 
             # Aggregate Penalties
-            route_penalty = (self.w_load * route.load_penalty) + (self.w_time * route.tw_penalties)
-
             ind = population[ind_idx]
-            ind.total_penalty += route_penalty
+            ind.load_penalty += route.load_penalty
+            ind.tw_penalty += route.tw_penalties
             ind.routes.append(route)
 
         # 4. Finalize Objectives
+        # Optional: Adaptive penalty weights
+        # self._update_penalty_weights(population)
         for individual in population:
-            if not individual.routes:
-                individual.total_penalty = float('inf')
-            else:
+            if individual.routes:
+                individual.total_penalty = (self.w_load * individual.load_penalty) + \
+                                           (self.w_time * individual.tw_penalty)
                 individual.f1_distance = sum(r.cost for r in individual.routes)
                 individual.f2_makespan = max(r.finish_time for r in individual.routes)
+
+    def _update_penalty_weights(self, population):
+        """
+        Dynamically tilts the fitness landscape to prevent the EA from
+        getting trapped in conflicting local optima.
+        """
+        # Calculate the proportion of individuals satisfying each constraint
+        feasible_load_count = sum(1 for ind in population if ind.load_penalty == 0)
+        feasible_tw_count = sum(1 for ind in population if ind.tw_penalty == 0)
+
+        pop_size = len(population)
+
+        # If almost everyone satisfies Load but fails TW, we are stuck in the Load Optimum.
+        # We heavily increase the TW weight to force them to care about Time Windows.
+        if feasible_load_count > pop_size * 0.8 and feasible_tw_count < pop_size * 0.2:
+            self.w_time *= 1.2
+            self.w_load *= 0.9
+
+        # Vice versa: stuck in the TW optimum, ignoring capacity.
+        elif feasible_tw_count > pop_size * 0.8 and feasible_load_count < pop_size * 0.2:
+            self.w_load *= 1.2
+            self.w_time *= 0.9
+
+        # Prevent weights from collapsing to zero or exploding to infinity
+        self.w_load = max(0.1, min(self.w_load, 1000.0))
+        self.w_time = max(0.1, min(self.w_time, 1000.0))
 
 
 class Evolution(ABC):

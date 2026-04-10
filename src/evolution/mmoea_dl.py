@@ -42,9 +42,11 @@ class MMOEA_DL(Evolution):
             sample_ind = fronts[0][0]
             f1_distance = sample_ind.f1_distance
             f2_makespan = sample_ind.f2_makespan
+            load_penalty = sample_ind.load_penalty
+            tw_penalty = sample_ind.tw_penalty
             total_penalty = sample_ind.total_penalty
             sample_str = (f"SampleInd(Distance={f1_distance:.2f}, Makespan={f2_makespan:.2f}, "
-                          f"Penalty={total_penalty:.2f})")
+                          f"Load_Penalty={load_penalty}, TW_Penalty={tw_penalty:.2f}, Total_Penalty={total_penalty:.2f})")
             print(f"Generation {gen + 1}/{self.max_gen} completed. {sample_str}")
 
         return fronts  # Returns the final Pareto Fronts
