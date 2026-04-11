@@ -205,17 +205,41 @@ class RandomKeyIndividual(BaseIndividual):
 
     def set_chromosome(self, new_chromosome):
         """
-        Safely assigns a new chromosome with strict dimension and boundary checks.
+        Safely assigns a new chromosome.
+        Handles out-of-bounds and ties by compressing them against the boundaries
+        with a minimum gap, perfectly preserving the genetic sorting order.
         """
         new_chromosome = np.array(new_chromosome, dtype=float)
-
-        # 1. Dimension Check
         if len(new_chromosome) != self.num_tasks:
             raise ValueError(f"Dimension mismatch: Expected {self.num_tasks}, got {len(new_chromosome)}")
 
-        # 2. Boundary Enforcement
-        # Clip to (1 - 1e-5)
-        self.chromosome = np.clip(new_chromosome, 0.0, 1 - 1e-5)
+        eps = 1e-5
+
+        # 1. Get the sorted order and the sorted values
+        sorted_idx = np.argsort(new_chromosome)
+        sorted_vals = new_chromosome[sorted_idx]
+
+        # 2. Forward Sweep: Enforce absolute minimums and minimum gaps
+        if sorted_vals[0] < eps:
+            sorted_vals[0] = eps
+
+        for i in range(1, len(sorted_vals)):
+            if sorted_vals[i] <= sorted_vals[i - 1] + eps:
+                sorted_vals[i] = sorted_vals[i - 1] + eps
+
+        # 3. Backward Sweep: Enforce absolute maximums and minimum gaps
+        if sorted_vals[-1] > 1.0 - eps:
+            sorted_vals[-1] = 1.0 - eps
+
+        for i in range(len(sorted_vals) - 2, -1, -1):
+            if sorted_vals[i] >= sorted_vals[i + 1] - eps:
+                sorted_vals[i] = sorted_vals[i + 1] - eps
+
+        # 4. Reconstruct the array in its original spatial order
+        repaired_chromosome = np.zeros_like(new_chromosome)
+        repaired_chromosome[sorted_idx] = sorted_vals
+
+        self.chromosome = repaired_chromosome
 
     def encode_lamarckian(self, routes):
         """
@@ -231,13 +255,16 @@ class RandomKeyIndividual(BaseIndividual):
         # 2. Extract and sort the ORIGINAL continuous keys
         sorted_keys = np.sort(self.chromosome)
 
-        noise = np.random.uniform(-0.05, 0.05, size=len(sorted_keys))
+        noise = np.random.uniform(-0.01, 0.01, size=len(sorted_keys))
         sorted_keys = np.sort(sorted_keys + noise)
 
         # 3. Assign the smallest keys to the earliest nodes in the optimized tour
+        new_chrom = np.zeros(self.num_tasks)
         for sequence_index, customer_id in enumerate(optimized_tour):
-            self.chromosome[customer_id - 1] = sorted_keys[sequence_index]
+            new_chrom[customer_id - 1] = sorted_keys[sequence_index]
+        self.set_chromosome(new_chrom)
 
+        # 4. Update the signature
         self.decode()
 
     def __repr__(self):
