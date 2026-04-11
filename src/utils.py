@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import random
 
 
 def calculate_euclidean_matrix(nodes):
@@ -60,3 +61,9 @@ def get_device():
         return torch.device("cuda")
     else:
         return torch.device("cpu")
+
+def apply_seed(seed=None):
+    seed = seed if seed is not None else random.randint(0, 2 ** 32 - 1)
+    random.seed(seed)
+    np.random.seed(seed)
+    print(f"Seed: {seed}")

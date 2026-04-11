@@ -1,54 +1,221 @@
-for i in range(1, 2):
-    print(i)
-    
-'''
-VRPTW environment ready
-NumPy version: 2.0.1
-SolomonInstance(name='R102', vehicles=25, capacity=200.0, num_nodes=101)
-15.231546211727817
-[Route(Load=32.0, Cost=18.63, Path=[0, 53, 58, 0]), Route(Load=72.0, Cost=55.48, Path=[0, 27, 69, 1, 50, 77, 3, 0]), Route(Load=58.0, Cost=48.88, Path=[0, 28, 26, 12, 80, 0]), Route(Load=42.0, Cost=29.04, Path=[0, 89, 94, 0]), Route(Load=84.0, Cost=43.45, Path=[0, 6, 96, 59, 93, 95, 0]), Route(Load=41.0, Cost=49.08, Path=[0, 13, 2, 21, 0]), Route(Load=60.0, Cost=57.13, Path=[0, 40, 72, 74, 75, 0]), Route(Load=61.0, Cost=57.57, Path=[0, 52, 18, 60, 83, 5, 0]), Route(Load=52.0, Cost=63.12, Path=[0, 76, 68, 24, 0]), Route(Load=72.0, Cost=55.65, Path=[0, 97, 37, 98, 85, 91, 0]), Route(Load=112.0, Cost=105.15, Path=[0, 31, 88, 7, 82, 48, 17, 100, 0]), Route(Load=21.0, Cost=84.95, Path=[0, 99, 84, 70, 0]), Route(Load=40.0, Cost=72.50, Path=[0, 87, 57, 43, 0]), Route(Load=51.0, Cost=113.84, Path=[0, 92, 42, 15, 41, 56, 4, 25, 0]), Route(Load=43.0, Cost=117.52, Path=[0, 73, 22, 55, 34, 0]), Route(Load=18.0, Cost=45.61, Path=[0, 54, 0]), Route(Load=45.0, Cost=82.23, Path=[0, 33, 81, 35, 0]), Route(Load=39.0, Cost=69.79, Path=[0, 10, 32, 0]), Route(Load=30.0, Cost=64.19, Path=[0, 30, 20, 0]), Route(Load=48.0, Cost=70.85, Path=[0, 61, 86, 0]), Route(Load=59.0, Cost=104.21, Path=[0, 62, 11, 90, 66, 0]), Route(Load=23.0, Cost=51.11, Path=[0, 79, 0]), Route(Load=10.0, Cost=71.15, Path=[0, 8, 46, 0]), Route(Load=26.0, Cost=65.27, Path=[0, 51, 9, 0]), Route(Load=19.0, Cost=58.31, Path=[0, 16, 0]), Route(Load=90.0, Cost=111.30, Path=[0, 45, 47, 19, 49, 0]), Route(Load=12.0, Cost=71.34, Path=[0, 29, 78, 0]), Route(Load=34.0, Cost=85.13, Path=[0, 44, 38, 0]), Route(Load=20.0, Cost=64.03, Path=[0, 14, 0]), Route(Load=85.0, Cost=98.44, Path=[0, 39, 23, 67, 0]), Route(Load=19.0, Cost=95.87, Path=[0, 63, 64, 0]), Route(Load=15.0, Cost=79.32, Path=[0, 71, 0]), Route(Load=5.0, Cost=82.80, Path=[0, 36, 0]), Route(Load=20.0, Cost=99.86, Path=[0, 65, 0])]
-[Route(Load=32.0, Cost=18.63, Path=[0, 53, 58, 0]), Route(Load=72.0, Cost=53.85, Path=[0, 27, 69, 1, 50, 3, 77, 0]), Route(Load=58.0, Cost=45.90, Path=[0, 28, 80, 12, 26, 0]), Route(Load=42.0, Cost=29.04, Path=[0, 89, 94, 0]), Route(Load=84.0, Cost=42.29, Path=[0, 6, 96, 93, 59, 95, 0]), Route(Load=41.0, Cost=49.08, Path=[0, 13, 2, 21, 0]), Route(Load=60.0, Cost=56.06, Path=[0, 40, 74, 75, 72, 0]), Route(Load=61.0, Cost=54.97, Path=[0, 52, 18, 83, 60, 5, 0]), Route(Load=52.0, Cost=63.12, Path=[0, 76, 68, 24, 0]), Route(Load=72.0, Cost=54.99, Path=[0, 97, 37, 91, 85, 98, 0]), Route(Load=112.0, Cost=102.91, Path=[0, 31, 88, 7, 48, 82, 17, 100, 0]), Route(Load=21.0, Cost=84.95, Path=[0, 99, 84, 70, 0]), Route(Load=40.0, Cost=70.12, Path=[0, 87, 43, 57, 0]), Route(Load=51.0, Cost=111.47, Path=[0, 92, 42, 15, 41, 56, 25, 4, 0]), Route(Load=43.0, Cost=117.52, Path=[0, 73, 22, 55, 34, 0]), Route(Load=18.0, Cost=45.61, Path=[0, 54, 0]), Route(Load=45.0, Cost=82.23, Path=[0, 33, 81, 35, 0]), Route(Load=39.0, Cost=69.79, Path=[0, 10, 32, 0]), Route(Load=30.0, Cost=64.19, Path=[0, 30, 20, 0]), Route(Load=48.0, Cost=70.85, Path=[0, 61, 86, 0]), Route(Load=59.0, Cost=104.21, Path=[0, 62, 11, 90, 66, 0]), Route(Load=23.0, Cost=51.11, Path=[0, 79, 0]), Route(Load=10.0, Cost=71.15, Path=[0, 8, 46, 0]), Route(Load=26.0, Cost=65.27, Path=[0, 51, 9, 0]), Route(Load=19.0, Cost=58.31, Path=[0, 16, 0]), Route(Load=90.0, Cost=103.49, Path=[0, 45, 47, 49, 19, 0]), Route(Load=12.0, Cost=71.34, Path=[0, 29, 78, 0]), Route(Load=34.0, Cost=85.13, Path=[0, 44, 38, 0]), Route(Load=20.0, Cost=64.03, Path=[0, 14, 0]), Route(Load=85.0, Cost=91.93, Path=[0, 23, 67, 39, 0]), Route(Load=19.0, Cost=95.87, Path=[0, 63, 64, 0]), Route(Load=15.0, Cost=79.32, Path=[0, 71, 0]), Route(Load=5.0, Cost=82.80, Path=[0, 36, 0]), Route(Load=20.0, Cost=99.86, Path=[0, 65, 0])]
-'''
+import sys
+from pathlib import Path
 
-'''
-Good seed: 1488761389
-'''
+# Get repo root (one level above src/)
+root = Path(__file__).resolve().parent.parent
 
-'''
-Front 1:
-Ind(Distance=3916.91, Makespan=1217.04, Penalty=209.81, Routes=[Route(Cost=86.91, Load=90.0, Time=593.57, Load_Penalty=0.0, TW_Penalties=38.52, Path=[0, 3, 1, 8, 10, 15, 0]), Route(Cost=172.81, Load=130.0, Time=831.84, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 32, 42, 46, 60, 2, 0]), Route(Cost=95.72, Load=50.0, Time=866.51, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 92, 100, 4, 0]), Route(Cost=30.27, Load=10.0, Time=120.27, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 5, 0]), Route(Cost=194.51, Load=90.0, Time=932.55, Load_Penalty=0.0, TW_Penalties=6.10, Path=[0, 54, 27, 14, 6, 66, 0]), Route(Cost=158.48, Load=80.0, Time=716.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 7, 95, 71, 77, 0]), Route(Cost=164.50, Load=50.0, Time=1217.04, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 44, 9, 36, 49, 26, 0]), Route(Cost=182.24, Load=80.0, Time=1020.18, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 13, 19, 11, 99, 31, 0]), Route(Cost=260.01, Load=130.0, Time=800.01, Load_Penalty=0.0, TW_Penalties=33.01, Path=[0, 20, 81, 82, 12, 16, 59, 0]), Route(Cost=223.09, Load=80.0, Time=840.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 17, 18, 70, 51, 0]), Route(Cost=252.40, Load=100.0, Time=875.38, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 67, 78, 72, 58, 21, 94, 0]), Route(Cost=117.84, Load=50.0, Time=1147.09, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 90, 22, 69, 48, 0]), Route(Cost=137.34, Load=50.0, Time=1162.03, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 96, 30, 23, 50, 47, 0]), Route(Cost=143.81, Load=90.0, Time=691.31, Load_Penalty=0.0, TW_Penalties=16.72, Path=[0, 24, 33, 29, 97, 0]), Route(Cost=247.99, Load=100.0, Time=1036.63, Load_Penalty=0.0, TW_Penalties=1.72, Path=[0, 55, 25, 52, 79, 80, 98, 0]), Route(Cost=120.85, Load=70.0, Time=795.22, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 62, 28, 88, 0]), Route(Cost=278.10, Load=150.0, Time=1063.33, Load_Penalty=0.0, TW_Penalties=12.90, Path=[0, 57, 53, 56, 84, 64, 83, 34, 0]), Route(Cost=156.38, Load=40.0, Time=643.36, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 87, 35, 61, 0]), Route(Cost=246.17, Load=80.0, Time=771.71, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 43, 76, 93, 37, 0]), Route(Cost=158.40, Load=110.0, Time=712.98, Load_Penalty=0.0, TW_Penalties=45.55, Path=[0, 65, 63, 86, 38, 45, 0]), Route(Cost=150.66, Load=60.0, Time=697.31, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 85, 41, 39, 0]), Route(Cost=82.03, Load=20.0, Time=505.41, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 40, 91, 0]), Route(Cost=78.25, Load=20.0, Time=971.64, Load_Penalty=0.0, TW_Penalties=55.29, Path=[0, 68, 89, 0]), Route(Cost=111.43, Load=10.0, Time=623.71, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 73, 0]), Route(Cost=66.71, Load=70.0, Time=579.86, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 74, 75, 0])])
-Front 2:
-Ind(Distance=3806.65, Makespan=1176.51, Penalty=321.69, Routes=[Route(Cost=127.94, Load=60.0, Time=794.28, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 33, 14, 1, 0]), Route(Cost=159.03, Load=120.0, Time=1080.92, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 57, 60, 51, 31, 2, 0]), Route(Cost=208.82, Load=120.0, Time=1154.61, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 67, 78, 70, 45, 64, 66, 21, 3, 0]), Route(Cost=194.14, Load=120.0, Time=1176.51, Load_Penalty=0.0, TW_Penalties=59.10, Path=[0, 72, 41, 38, 23, 4, 95, 7, 0]), Route(Cost=244.99, Load=90.0, Time=1021.81, Load_Penalty=0.0, TW_Penalties=9.76, Path=[0, 54, 92, 30, 5, 69, 0]), Route(Cost=94.89, Load=110.0, Time=730.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 27, 15, 16, 6, 0]), Route(Cost=281.67, Load=100.0, Time=915.45, Load_Penalty=0.0, TW_Penalties=25.94, Path=[0, 32, 8, 19, 37, 79, 80, 0]), Route(Cost=92.10, Load=40.0, Time=644.10, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 20, 62, 9, 0]), Route(Cost=127.88, Load=110.0, Time=699.46, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 52, 25, 10, 98, 85, 0]), Route(Cost=93.11, Load=50.0, Time=664.16, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 12, 11, 28, 0]), Route(Cost=171.24, Load=50.0, Time=623.71, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 13, 91, 73, 0]), Route(Cost=170.38, Load=60.0, Time=694.77, Load_Penalty=0.0, TW_Penalties=64.10, Path=[0, 65, 17, 84, 61, 0]), Route(Cost=295.87, Load=120.0, Time=866.54, Load_Penalty=0.0, TW_Penalties=80.58, Path=[0, 81, 18, 35, 74, 99, 0]), Route(Cost=93.23, Load=70.0, Time=914.17, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 50, 39, 34, 22, 0]), Route(Cost=168.46, Load=110.0, Time=952.12, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 24, 59, 56, 46, 89, 75, 0]), Route(Cost=204.49, Load=80.0, Time=1110.21, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 43, 26, 93, 36, 49, 0]), Route(Cost=195.37, Load=80.0, Time=881.67, Load_Penalty=0.0, TW_Penalties=59.32, Path=[0, 87, 29, 44, 88, 68, 0]), Route(Cost=170.60, Load=90.0, Time=774.28, Load_Penalty=0.0, TW_Penalties=21.97, Path=[0, 42, 40, 58, 97, 0]), Route(Cost=129.68, Load=70.0, Time=1162.03, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 63, 77, 47, 0]), Route(Cost=194.79, Load=60.0, Time=775.08, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 48, 71, 94, 100, 0]), Route(Cost=152.30, Load=30.0, Time=483.10, Load_Penalty=0.0, TW_Penalties=0.92, Path=[0, 76, 53, 0]), Route(Cost=70.11, Load=10.0, Time=220.06, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 55, 0]), Route(Cost=100.57, Load=30.0, Time=280.57, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 82, 96, 0]), Route(Cost=65.00, Load=30.0, Time=391.39, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 90, 86, 83, 0])])
-Front 3:
-Ind(Distance=4063.83, Makespan=1162.03, Penalty=350.79, Routes=[Route(Cost=199.97, Load=150.0, Time=1136.75, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 52, 31, 29, 37, 39, 1, 99, 98, 85, 0]), Route(Cost=169.08, Load=100.0, Time=956.14, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 57, 91, 2, 23, 66, 0]), Route(Cost=39.89, Load=20.0, Time=463.76, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 3, 10, 0]), Route(Cost=57.87, Load=40.0, Time=835.11, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 24, 7, 4, 0]), Route(Cost=131.02, Load=60.0, Time=914.17, Load_Penalty=0.0, TW_Penalties=0.82, Path=[0, 90, 65, 83, 5, 22, 0]), Route(Cost=176.23, Load=100.0, Time=766.96, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 50, 59, 53, 95, 96, 6, 0]), Route(Cost=195.38, Load=90.0, Time=1021.81, Load_Penalty=0.0, TW_Penalties=29.18, Path=[0, 8, 56, 38, 69, 0]), Route(Cost=143.18, Load=90.0, Time=769.72, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 33, 35, 9, 88, 0]), Route(Cost=186.10, Load=90.0, Time=782.63, Load_Penalty=0.0, TW_Penalties=34.98, Path=[0, 86, 40, 74, 11, 64, 0]), Route(Cost=388.09, Load=110.0, Time=1090.58, Load_Penalty=0.0, TW_Penalties=36.98, Path=[0, 78, 44, 16, 79, 68, 12, 0]), Route(Cost=184.47, Load=60.0, Time=454.47, Load_Penalty=0.0, TW_Penalties=68.46, Path=[0, 13, 42, 76, 0]), Route(Cost=157.03, Load=50.0, Time=696.36, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 54, 14, 0]), Route(Cost=280.52, Load=160.0, Time=878.05, Load_Penalty=0.0, TW_Penalties=38.14, Path=[0, 81, 25, 62, 15, 100, 94, 0]), Route(Cost=271.87, Load=110.0, Time=872.30, Load_Penalty=0.0, TW_Penalties=104.88, Path=[0, 20, 17, 41, 84, 58, 34, 0]), Route(Cost=188.96, Load=70.0, Time=716.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 26, 18, 70, 77, 0]), Route(Cost=182.31, Load=60.0, Time=840.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 19, 93, 51, 0]), Route(Cost=144.08, Load=70.0, Time=920.79, Load_Penalty=0.0, TW_Penalties=31.93, Path=[0, 21, 48, 45, 60, 89, 0]), Route(Cost=247.78, Load=50.0, Time=702.13, Load_Penalty=0.0, TW_Penalties=5.42, Path=[0, 55, 27, 92, 73, 0]), Route(Cost=121.81, Load=90.0, Time=669.76, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 75, 87, 46, 28, 0]), Route(Cost=99.18, Load=30.0, Time=559.62, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 43, 72, 30, 0]), Route(Cost=74.05, Load=40.0, Time=790.36, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 32, 36, 0]), Route(Cost=63.85, Load=80.0, Time=1162.03, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 67, 63, 61, 47, 0]), Route(Cost=144.14, Load=60.0, Time=1110.21, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 97, 82, 49, 0]), Route(Cost=114.02, Load=20.0, Time=440.01, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 71, 0]), Route(Cost=102.96, Load=10.0, Time=910.48, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 80, 0])])
-Front 4:
-Ind(Distance=3860.58, Makespan=1196.74, Penalty=386.24, Routes=[Route(Cost=110.97, Load=80.0, Time=687.97, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 57, 44, 1, 75, 0]), Route(Cost=294.89, Load=90.0, Time=1110.21, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 55, 41, 10, 73, 94, 2, 49, 0]), Route(Cost=209.69, Load=120.0, Time=1087.69, Load_Penalty=0.0, TW_Penalties=72.25, Path=[0, 29, 74, 77, 4, 3, 85, 0]), Route(Cost=120.64, Load=50.0, Time=480.64, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 52, 21, 5, 83, 0]), Route(Cost=96.33, Load=60.0, Time=968.33, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 7, 6, 50, 66, 0]), Route(Cost=290.40, Load=110.0, Time=1147.52, Load_Penalty=0.0, TW_Penalties=107.83, Path=[0, 90, 65, 8, 71, 61, 45, 59, 69, 91, 0]), Route(Cost=247.46, Load=120.0, Time=697.46, Load_Penalty=0.0, TW_Penalties=71.16, Path=[0, 13, 33, 76, 70, 9, 0]), Route(Cost=171.16, Load=100.0, Time=664.82, Load_Penalty=0.0, TW_Penalties=50.18, Path=[0, 43, 25, 27, 56, 11, 0]), Route(Cost=107.98, Load=80.0, Time=696.36, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 63, 12, 14, 0]), Route(Cost=165.29, Load=180.0, Time=835.28, Load_Penalty=0.0, TW_Penalties=1.28, Path=[0, 32, 34, 15, 93, 97, 98, 0]), Route(Cost=135.20, Load=80.0, Time=605.31, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 42, 62, 16, 0]), Route(Cost=158.90, Load=60.0, Time=710.14, Load_Penalty=0.0, TW_Penalties=66.09, Path=[0, 67, 17, 30, 84, 0]), Route(Cost=240.82, Load=110.0, Time=959.81, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 95, 18, 39, 100, 22, 0]), Route(Cost=152.80, Load=50.0, Time=653.72, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 72, 86, 19, 28, 0]), Route(Cost=108.50, Load=100.0, Time=1162.03, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 20, 54, 58, 48, 47, 0]), Route(Cost=26.00, Load=10.0, Time=835.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 23, 0]), Route(Cost=67.02, Load=20.0, Time=743.54, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 24, 64, 0]), Route(Cost=105.02, Load=30.0, Time=844.62, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 26, 35, 68, 0]), Route(Cost=395.48, Load=130.0, Time=1196.74, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 81, 40, 92, 96, 79, 99, 37, 31, 0]), Route(Cost=169.30, Load=20.0, Time=978.94, Load_Penalty=0.0, TW_Penalties=17.46, Path=[0, 36, 80, 0]), Route(Cost=196.17, Load=70.0, Time=753.77, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 53, 38, 60, 0]), Route(Cost=237.11, Load=110.0, Time=900.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 82, 78, 46, 88, 51, 0]), Route(Cost=53.45, Load=30.0, Time=851.35, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 87, 89, 0])])
-Front 5:
-Ind(Distance=4060.33, Makespan=1162.03, Penalty=409.74, Routes=[Route(Cost=250.68, Load=130.0, Time=1135.05, Load_Penalty=0.0, TW_Penalties=13.65, Path=[0, 20, 40, 16, 100, 51, 2, 1, 0]), Route(Cost=178.35, Load=110.0, Time=976.38, Load_Penalty=0.0, TW_Penalties=48.48, Path=[0, 32, 56, 64, 88, 3, 0]), Route(Cost=239.10, Load=100.0, Time=979.60, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 43, 18, 38, 12, 4, 83, 0]), Route(Cost=205.95, Load=90.0, Time=1021.81, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 24, 8, 5, 58, 89, 69, 0]), Route(Cost=224.05, Load=180.0, Time=930.97, Load_Penalty=0.0, TW_Penalties=30.42, Path=[0, 57, 87, 62, 15, 6, 75, 22, 0]), Route(Cost=147.38, Load=60.0, Time=1110.21, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 65, 94, 7, 50, 49, 0]), Route(Cost=88.96, Load=70.0, Time=835.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 74, 9, 23, 0]), Route(Cost=33.53, Load=10.0, Time=463.76, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 10, 0]), Route(Cost=184.37, Load=60.0, Time=990.37, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 41, 35, 11, 99, 82, 0]), Route(Cost=147.30, Load=60.0, Time=697.28, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 13, 26, 60, 0]), Route(Cost=185.57, Load=30.0, Time=884.91, Load_Penalty=0.0, TW_Penalties=99.91, Path=[0, 19, 14, 77, 0]), Route(Cost=66.60, Load=20.0, Time=222.30, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 17, 0]), Route(Cost=236.83, Load=110.0, Time=908.34, Load_Penalty=0.0, TW_Penalties=65.18, Path=[0, 86, 92, 46, 97, 21, 0]), Route(Cost=165.50, Load=100.0, Time=1162.03, Load_Penalty=0.0, TW_Penalties=1.72, Path=[0, 55, 25, 30, 61, 72, 68, 47, 0]), Route(Cost=258.17, Load=80.0, Time=953.65, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 78, 27, 39, 48, 98, 0]), Route(Cost=197.24, Load=90.0, Time=806.71, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 33, 59, 52, 28, 96, 0]), Route(Cost=156.14, Load=40.0, Time=674.14, Load_Penalty=0.0, TW_Penalties=69.62, Path=[0, 29, 70, 0]), Route(Cost=166.38, Load=80.0, Time=863.33, Load_Penalty=0.0, TW_Penalties=57.46, Path=[0, 84, 93, 31, 0]), Route(Cost=227.30, Load=90.0, Time=1004.85, Load_Penalty=0.0, TW_Penalties=23.29, Path=[0, 42, 34, 95, 80, 66, 0]), Route(Cost=183.69, Load=110.0, Time=890.12, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 85, 54, 45, 36, 37, 0]), Route(Cost=150.45, Load=70.0, Time=654.71, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 63, 44, 73, 0]), Route(Cost=90.35, Load=20.0, Time=421.18, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 53, 0]), Route(Cost=112.41, Load=30.0, Time=809.08, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 67, 76, 79, 0]), Route(Cost=122.81, Load=60.0, Time=538.37, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 81, 71, 91, 0]), Route(Cost=41.23, Load=10.0, Time=131.23, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 90, 0])])
-Front 6:
-Ind(Distance=4184.66, Makespan=1162.03, Penalty=433.14, Routes=[Route(Cost=221.72, Load=110.0, Time=940.90, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 67, 78, 58, 83, 85, 1, 0]), Route(Cost=164.22, Load=100.0, Time=610.23, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 82, 2, 34, 38, 0]), Route(Cost=216.04, Load=90.0, Time=1110.21, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 13, 35, 98, 3, 23, 49, 0]), Route(Cost=133.60, Load=120.0, Time=868.58, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 63, 62, 56, 64, 4, 0]), Route(Cost=277.60, Load=100.0, Time=1022.86, Load_Penalty=0.0, TW_Penalties=54.63, Path=[0, 90, 33, 41, 31, 80, 5, 0]), Route(Cost=298.53, Load=110.0, Time=942.53, Load_Penalty=0.0, TW_Penalties=69.11, Path=[0, 81, 17, 52, 39, 6, 96, 0]), Route(Cost=182.97, Load=90.0, Time=914.17, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 57, 73, 7, 22, 0]), Route(Cost=209.48, Load=90.0, Time=932.55, Load_Penalty=0.0, TW_Penalties=275.37, Path=[0, 20, 8, 92, 53, 45, 66, 0]), Route(Cost=86.67, Load=20.0, Time=644.10, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 72, 9, 0]), Route(Cost=200.50, Load=80.0, Time=774.13, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 42, 10, 93, 77, 0]), Route(Cost=98.71, Load=60.0, Time=690.24, Load_Penalty=0.0, TW_Penalties=31.93, Path=[0, 24, 11, 16, 0]), Route(Cost=162.47, Load=90.0, Time=697.49, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 65, 25, 19, 30, 12, 0]), Route(Cost=214.71, Load=100.0, Time=942.64, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 55, 15, 14, 88, 99, 0]), Route(Cost=114.34, Load=80.0, Time=1021.81, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 18, 74, 69, 0]), Route(Cost=210.31, Load=130.0, Time=1162.03, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 91, 54, 46, 60, 21, 47, 0]), Route(Cost=256.27, Load=110.0, Time=1091.42, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 32, 76, 70, 68, 37, 26, 0]), Route(Cost=203.46, Load=90.0, Time=902.03, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 87, 27, 61, 100, 95, 0]), Route(Cost=163.16, Load=60.0, Time=831.04, Load_Penalty=0.0, TW_Penalties=2.10, Path=[0, 43, 84, 28, 36, 0]), Route(Cost=64.86, Load=20.0, Time=468.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 48, 29, 0]), Route(Cost=123.69, Load=20.0, Time=809.08, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 40, 79, 0]), Route(Cost=220.59, Load=60.0, Time=840.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 86, 44, 97, 51, 0]), Route(Cost=45.61, Load=10.0, Time=135.61, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 50, 0]), Route(Cost=119.92, Load=40.0, Time=1001.80, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 75, 89, 59, 0]), Route(Cost=114.02, Load=20.0, Time=440.01, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 71, 0]), Route(Cost=81.22, Load=10.0, Time=171.22, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 94, 0])])
-Front 7:
-Ind(Distance=3922.92, Makespan=1187.93, Penalty=442.24, Routes=[Route(Cost=151.14, Load=80.0, Time=1162.03, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 29, 38, 6, 1, 47, 0]), Route(Cost=246.83, Load=110.0, Time=922.74, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 17, 53, 73, 82, 2, 5, 0]), Route(Cost=103.66, Load=80.0, Time=653.72, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 95, 3, 8, 28, 0]), Route(Cost=74.53, Load=30.0, Time=835.11, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 42, 4, 0]), Route(Cost=318.71, Load=160.0, Time=1083.37, Load_Penalty=0.0, TW_Penalties=218.31, Path=[0, 50, 18, 74, 60, 39, 100, 7, 0]), Route(Cost=280.01, Load=90.0, Time=851.35, Load_Penalty=0.0, TW_Penalties=27.98, Path=[0, 13, 78, 44, 72, 9, 89, 0]), Route(Cost=301.53, Load=110.0, Time=1076.32, Load_Penalty=0.0, TW_Penalties=60.07, Path=[0, 67, 43, 40, 10, 93, 79, 68, 94, 0]), Route(Cost=125.87, Load=30.0, Time=1110.21, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 83, 11, 49, 0]), Route(Cost=196.69, Load=100.0, Time=1187.93, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 20, 24, 52, 58, 45, 69, 12, 0]), Route(Cost=159.14, Load=110.0, Time=823.67, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 90, 87, 15, 14, 88, 0]), Route(Cost=124.84, Load=60.0, Time=605.31, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 31, 16, 0]), Route(Cost=179.97, Load=110.0, Time=914.17, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 32, 37, 19, 98, 26, 22, 0]), Route(Cost=114.44, Load=90.0, Time=1053.22, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 57, 51, 21, 75, 0]), Route(Cost=132.59, Load=50.0, Time=956.14, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 41, 59, 61, 23, 66, 0]), Route(Cost=30.27, Load=40.0, Time=274.13, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 25, 0]), Route(Cost=185.24, Load=90.0, Time=877.79, Load_Penalty=0.0, TW_Penalties=6.10, Path=[0, 54, 27, 64, 85, 0]), Route(Cost=128.51, Load=60.0, Time=639.47, Load_Penalty=0.0, TW_Penalties=24.85, Path=[0, 48, 55, 56, 30, 0]), Route(Cost=150.21, Load=110.0, Time=473.68, Load_Penalty=0.0, TW_Penalties=1.00, Path=[0, 33, 63, 34, 0]), Route(Cost=240.93, Load=30.0, Time=873.70, Load_Penalty=0.0, TW_Penalties=32.34, Path=[0, 35, 77, 36, 0]), Route(Cost=150.41, Load=80.0, Time=656.93, Load_Penalty=0.0, TW_Penalties=71.58, Path=[0, 86, 76, 70, 46, 0]), Route(Cost=36.22, Load=30.0, Time=370.03, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 65, 62, 0]), Route(Cost=150.07, Load=30.0, Time=440.01, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 96, 71, 0]), Route(Cost=215.47, Load=80.0, Time=910.48, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 81, 92, 84, 80, 0]), Route(Cost=44.72, Load=10.0, Time=134.72, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 91, 0]), Route(Cost=80.92, Load=40.0, Time=866.54, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 97, 99, 0])])
-Front 8:
-Ind(Distance=3975.27, Makespan=1201.07, Penalty=443.04, Routes=[Route(Cost=84.44, Load=50.0, Time=363.11, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 1, 12, 8, 0]), Route(Cost=170.38, Load=120.0, Time=1055.42, Load_Penalty=0.0, TW_Penalties=19.24, Path=[0, 42, 55, 59, 30, 4, 2, 85, 0]), Route(Cost=107.55, Load=40.0, Time=377.55, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 3, 87, 52, 0]), Route(Cost=52.80, Load=20.0, Time=282.80, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 24, 5, 0]), Route(Cost=191.08, Load=80.0, Time=878.79, Load_Penalty=0.0, TW_Penalties=37.44, Path=[0, 54, 29, 6, 36, 0]), Route(Cost=268.98, Load=130.0, Time=1201.07, Load_Penalty=0.0, TW_Penalties=218.31, Path=[0, 7, 48, 60, 39, 100, 95, 83, 0]), Route(Cost=115.87, Load=80.0, Time=686.93, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 33, 46, 9, 0]), Route(Cost=222.27, Load=60.0, Time=911.22, Load_Penalty=0.0, TW_Penalties=151.44, Path=[0, 19, 10, 73, 28, 23, 0]), Route(Cost=162.91, Load=50.0, Time=868.12, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 20, 41, 11, 64, 89, 0]), Route(Cost=167.73, Load=60.0, Time=441.03, Load_Penalty=0.0, TW_Penalties=16.00, Path=[0, 13, 76, 62, 0]), Route(Cost=302.14, Load=110.0, Time=1061.01, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 43, 65, 71, 91, 14, 88, 99, 69, 0]), Route(Cost=206.37, Load=110.0, Time=866.33, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 31, 26, 15, 82, 72, 68, 0]), Route(Cost=307.49, Load=90.0, Time=917.79, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 78, 16, 34, 80, 0]), Route(Cost=210.56, Load=100.0, Time=782.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 67, 17, 37, 97, 98, 0]), Route(Cost=218.73, Load=90.0, Time=606.04, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 57, 18, 58, 0]), Route(Cost=71.53, Load=80.0, Time=495.33, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 21, 27, 74, 0]), Route(Cost=196.10, Load=80.0, Time=923.13, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 32, 35, 61, 79, 22, 0]), Route(Cost=97.51, Load=90.0, Time=1162.03, Load_Penalty=0.0, TW_Penalties=0.62, Path=[0, 25, 38, 45, 47, 0]), Route(Cost=176.27, Load=60.0, Time=840.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 40, 93, 51, 0]), Route(Cost=43.08, Load=10.0, Time=470.54, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 44, 0]), Route(Cost=131.34, Load=80.0, Time=1110.21, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 75, 53, 56, 49, 0]), Route(Cost=60.57, Load=20.0, Time=932.55, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 50, 66, 0]), Route(Cost=158.00, Load=110.0, Time=754.76, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 63, 70, 84, 96, 0]), Route(Cost=150.73, Load=50.0, Time=851.47, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 81, 77, 94, 0]), Route(Cost=100.84, Load=40.0, Time=502.20, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 90, 86, 92, 0])])
-Front 9:
-Ind(Distance=3954.17, Makespan=1215.65, Penalty=447.15, Routes=[Route(Cost=166.18, Load=70.0, Time=844.62, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 13, 1, 60, 68, 0]), Route(Cost=196.69, Load=90.0, Time=852.97, Load_Penalty=0.0, TW_Penalties=47.08, Path=[0, 65, 24, 58, 83, 2, 0]), Route(Cost=269.97, Load=100.0, Time=1143.55, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 18, 19, 12, 30, 48, 80, 94, 3, 0]), Route(Cost=247.07, Load=110.0, Time=1215.65, Load_Penalty=0.0, TW_Penalties=60.82, Path=[0, 55, 25, 45, 23, 4, 69, 82, 0]), Route(Cost=169.51, Load=130.0, Time=866.37, Load_Penalty=0.0, TW_Penalties=36.82, Path=[0, 63, 62, 56, 11, 5, 89, 0]), Route(Cost=92.37, Load=50.0, Time=730.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 67, 84, 6, 0]), Route(Cost=177.09, Load=80.0, Time=844.36, Load_Penalty=0.0, TW_Penalties=3.01, Path=[0, 7, 87, 97, 36, 0]), Route(Cost=234.46, Load=140.0, Time=892.61, Load_Penalty=0.0, TW_Penalties=99.43, Path=[0, 50, 26, 8, 15, 46, 9, 100, 0]), Route(Cost=301.94, Load=90.0, Time=934.40, Load_Penalty=0.0, TW_Penalties=119.86, Path=[0, 78, 53, 44, 10, 79, 21, 0]), Route(Cost=290.48, Load=170.0, Time=1110.21, Load_Penalty=0.0, TW_Penalties=39.46, Path=[0, 57, 33, 40, 29, 38, 14, 31, 49, 0]), Route(Cost=109.41, Load=70.0, Time=1162.03, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 16, 22, 47, 0]), Route(Cost=138.12, Load=40.0, Time=643.36, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 17, 59, 61, 0]), Route(Cost=133.38, Load=50.0, Time=993.54, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 20, 41, 64, 99, 96, 0]), Route(Cost=237.04, Load=170.0, Time=893.95, Load_Penalty=0.0, TW_Penalties=40.68, Path=[0, 90, 54, 27, 74, 72, 85, 98, 0]), Route(Cost=99.50, Load=40.0, Time=1056.54, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 28, 66, 91, 0]), Route(Cost=63.25, Load=30.0, Time=153.25, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 32, 0]), Route(Cost=246.83, Load=110.0, Time=878.75, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 81, 86, 71, 73, 37, 34, 0]), Route(Cost=89.57, Load=30.0, Time=697.31, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 35, 39, 0]), Route(Cost=192.84, Load=70.0, Time=766.62, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 42, 93, 77, 0]), Route(Cost=171.22, Load=40.0, Time=840.00, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 43, 92, 51, 0]), Route(Cost=191.24, Load=100.0, Time=882.43, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 52, 70, 88, 95, 0]), Route(Cost=31.62, Load=20.0, Time=121.62, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 75, 0]), Route(Cost=104.40, Load=10.0, Time=345.20, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 76, 0])])
-Front 10:
-Ind(Distance=4275.06, Makespan=1188.46, Penalty=461.48, Routes=[Route(Cost=184.61, Load=110.0, Time=1050.02, Load_Penalty=0.0, TW_Penalties=19.59, Path=[0, 55, 25, 27, 10, 5, 1, 66, 50, 0]), Route(Cost=146.84, Load=80.0, Time=697.31, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 75, 96, 2, 39, 0]), Route(Cost=151.43, Load=70.0, Time=844.62, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 21, 7, 3, 77, 68, 0]), Route(Cost=74.53, Load=30.0, Time=835.11, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 42, 4, 0]), Route(Cost=159.25, Load=60.0, Time=1021.81, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 58, 6, 69, 0]), Route(Cost=175.42, Load=100.0, Time=866.54, Load_Penalty=0.0, TW_Penalties=24.05, Path=[0, 8, 92, 16, 9, 99, 0]), Route(Cost=113.04, Load=40.0, Time=851.35, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 87, 11, 89, 0]), Route(Cost=254.24, Load=160.0, Time=947.43, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 65, 54, 59, 70, 97, 12, 22, 0]), Route(Cost=398.37, Load=150.0, Time=1162.03, Load_Penalty=0.0, TW_Penalties=86.70, Path=[0, 13, 71, 30, 93, 82, 37, 47, 0]), Route(Cost=122.30, Load=30.0, Time=696.36, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 40, 48, 14, 0]), Route(Cost=147.29, Load=70.0, Time=765.24, Load_Penalty=0.0, TW_Penalties=5.63, Path=[0, 15, 84, 72, 0]), Route(Cost=147.31, Load=80.0, Time=507.31, Load_Penalty=0.0, TW_Penalties=191.71, Path=[0, 20, 57, 17, 26, 0]), Route(Cost=128.18, Load=40.0, Time=541.82, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 18, 91, 83, 0]), Route(Cost=374.35, Load=140.0, Time=1188.46, Load_Penalty=0.0, TW_Penalties=26.90, Path=[0, 90, 98, 19, 46, 100, 51, 85, 49, 0]), Route(Cost=151.91, Load=30.0, Time=835.00, Load_Penalty=0.0, TW_Penalties=51.08, Path=[0, 41, 76, 23, 0]), Route(Cost=86.48, Load=40.0, Time=356.48, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 67, 24, 34, 0]), Route(Cost=168.53, Load=60.0, Time=790.36, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 81, 28, 36, 0]), Route(Cost=160.27, Load=30.0, Time=768.27, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 29, 73, 64, 0]), Route(Cost=129.63, Load=60.0, Time=643.36, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 52, 31, 53, 61, 0]), Route(Cost=199.29, Load=70.0, Time=686.56, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 32, 56, 94, 0]), Route(Cost=217.31, Load=90.0, Time=1045.82, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 43, 33, 80, 95, 0]), Route(Cost=140.74, Load=90.0, Time=761.93, Load_Penalty=0.0, TW_Penalties=9.00, Path=[0, 35, 74, 88, 0]), Route(Cost=281.39, Load=120.0, Time=809.08, Load_Penalty=0.0, TW_Penalties=19.33, Path=[0, 78, 63, 44, 38, 79, 0]), Route(Cost=109.42, Load=50.0, Time=791.77, Load_Penalty=0.0, TW_Penalties=27.50, Path=[0, 62, 45, 60, 0]), Route(Cost=52.95, Load=10.0, Time=289.48, Load_Penalty=0.0, TW_Penalties=0.00, Path=[0, 86, 0])])
+# Add vrptw root to path so 'src' is importable as a package
+sys.path.insert(0, str(root))
 
-'''
-
+import numpy as np
 import torch
+import random
+from src.parser import read_solomon_instance
+from src.utils import calculate_euclidean_matrix, calculate_penalty_weights, get_device
+from src.route import Route
 
-print("Imported torch")
+from solvers import GreedySolver, NazariSolver, SequentialSolver, GCNSolver
+from local_search import TwoOptLocalSearch, LNSLocalSearch, NoLocalSearch
+from evolution import MMOEA_DL_Evaluator, MMOEA_DL, MemeticEA, SplitEvaluator
+from evolution.utils import delete_redundant_solutions
+from models import NazariActorNetwork, GCNActorNetwork
+from copy import deepcopy, copy
 
-if torch.backends.mps.is_available():
-    device = torch.device("mps")
-    print("Metal (MPS) backend is available! Using GPU.")
-else:
+
+def apply_seed(seed=None):
+    # Seed Management
+    seed = seed if seed is not None else random.randint(0, 2 ** 32 - 1)
+    random.seed(seed)
+    np.random.seed(seed)
+    print(f"Seed: {seed}")
+
+def lower_level_test(instance, dist_matrix):
+    print(f"--- Lower-level Test: Greedy and 2-opt / LNS ---")
+
+    # Upper-level allocation
+
+    # Expected result:
+    # Greedy: [0, 27, 69, 1, 50, 77, 3, 0]
+    # After 2-opt: [0, 27, 69, 1, 50, 3, 77, 0]
+    test_nodes = [1, 3, 27, 50, 69, 77]
+
+    unvisited = [instance.nodes[i] for i in test_nodes]
+
+    # Lower-level: repeatedly run greedy solver on all unvisited nodes
+    solver = GreedySolver(instance, dist_matrix)
+    route = solver.solve(unvisited)
+    route_copy = deepcopy(route)
+    print(f"Greedy: {route}")
+
+    # Lower-level: use 2-opt to optimize each route
+    local_search = TwoOptLocalSearch(instance, dist_matrix)
+    local_search.optimize(route)
+    print(f"2-opt: {route}")
+
+    # Lower-level: use LNS to optimize each route
+    local_search = LNSLocalSearch(instance, dist_matrix)
+    local_search.optimize(route_copy)
+    print(f"LNS: {route_copy}")
+
+def lower_level_drl(instance, dist_matrix):
+    print(f"--- Lower-level Test: DRL and 2-opt ---")
+
+    # Upper-level allocation
+
+    # Expected result on r102:
+    # Greedy: [0, 27, 69, 1, 50, 77, 3, 0]
+    # After 2-opt: [0, 27, 69, 1, 50, 3, 77, 0]
+    test_nodes = [1, 3, 27, 50, 69, 77]
+
+    unvisited = [instance.nodes[i] for i in test_nodes]
+
+    # Lower-level: repeatedly run greedy solver on all unvisited nodes
+    device = get_device()
+    checkpoint_path = root / "checkpoints" / "actor_epoch_20.pt"
+    drl_actor = NazariActorNetwork().to(device)
+    drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    solver = NazariSolver(instance, dist_matrix, drl_actor, device)
+    route = solver.solve(unvisited)
+    print(f"DRL: {route}")
+
+    # Lower-level: use 2-opt to optimize each route
+    local_search = TwoOptLocalSearch(instance, dist_matrix)
+    local_search.optimize(route)
+    print(f"2-opt: {route}")
+
+def lower_level_gcn(instance, dist_matrix):
+    print(f"--- Lower-level Test: GCN and 2-opt ---")
+
+    # Upper-level allocation
+
+    # Expected result on r102:
+    # Greedy: [0, 27, 69, 1, 50, 77, 3, 0]
+    # After 2-opt: [0, 27, 69, 1, 50, 3, 77, 0]
+    test_nodes = [1, 3, 27, 50, 69, 77]
+
+    unvisited = [instance.nodes[i] for i in test_nodes]
+
+    # Lower-level: repeatedly run greedy solver on all unvisited nodes
+    device = get_device()
+    checkpoint_path = root / "checkpoints" / "gcn_actor_epoch_20.pt"
+    drl_actor = GCNActorNetwork().to(device)
+    drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    solver = GCNSolver(instance, dist_matrix, drl_actor, device)
+    route = solver.solve(unvisited)
+    print(f"GCN: {route}")
+
+    # Lower-level: use 2-opt to optimize each route
+    local_search = TwoOptLocalSearch(instance, dist_matrix)
+    local_search.optimize(route)
+    print(f"2-opt: {route}")
+
+def mmoea_dl_test(instance, dist_matrix):
+    print(f"--- MMOEA-DL Test ---")
+
+    # instance.nodes = instance.nodes[:51]
+    # print(f"Cropped instance to the first 50 customers")
+
+    w_load, w_time = calculate_penalty_weights(instance)
+    # w_load = 1.0
+    # w_time = 100.0
+
+    # device = get_device()
+    # print(f"Loading weights to device: {device}")
+    # checkpoint_path = root / "checkpoints" / "actor_epoch_60.pt"
+    # drl_actor = NazariActorNetwork().to(device)
+    # drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    # solver = NazariSolver(instance, dist_matrix, drl_actor, device)
+    solver = GreedySolver(instance, dist_matrix)
+
+    # local_search = NoLocalSearch(instance, dist_matrix)
+    # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30, removal_fraction=0.3)
+    local_search = TwoOptLocalSearch(instance, dist_matrix)
+
+    evaluator = MMOEA_DL_Evaluator(instance, dist_matrix, solver, local_search, w_load, w_time)
+    mmoea_dl = MMOEA_DL(instance, dist_matrix, evaluator, pop_size=100, max_gen=1000)
+    fronts = mmoea_dl.solve()
+
+    # Print top 10 fronts
+    for i, front in enumerate(fronts):
+        if i > 9:
+            break
+        print(f"Front {i + 1}:")
+        for ind in front:
+            print(ind)
+
+def memetic_test(instance, dist_matrix):
+    print(f"--- Memetic Split Test ---")
+
+    # instance.nodes = instance.nodes[:51]
+    # print(f"Cropped instance to the first 50 customers")
+
+    w_fleet = 200.0
+    w_time = 1.0
+
+    # USE CPU FOR INFERENCE!! You'll experience bottleneck translating things back and forth between cpu and gpu
+    # device = get_device()
     device = torch.device("cpu")
-    print("MPS not available. Falling back to CPU.")
 
-# Test it
-x = torch.rand(5, 5).to(device)
-print(f"Tensor is on device: {x.device}")
+    print(f"Loading weights to device: {device}")
+    checkpoint_path = root / "checkpoints" / "gcn_actor_epoch_20.pt"
+    drl_actor = GCNActorNetwork().to(device)
+    drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    solver = GCNSolver(instance, dist_matrix, drl_actor, device)
+    # solver = GreedySolver(instance, dist_matrix)
+    # solver = SequentialSolver(instance, dist_matrix)
+
+    # local_search = NoLocalSearch(instance, dist_matrix)
+    # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30, removal_fraction=0.3)
+    local_search = TwoOptLocalSearch(instance, dist_matrix)
+
+    evaluator = SplitEvaluator(instance, dist_matrix, solver, local_search, w_fleet, w_time)
+    mematic = MemeticEA(instance, dist_matrix, evaluator, pop_size=100, max_gen=300, F=0.2)
+    fronts = mematic.solve()
+
+    # Print top 10 fronts
+    fronts = delete_redundant_solutions(fronts)
+    for i, front in enumerate(fronts):
+        if i > 9:
+            break
+        print(f"Front {i + 1}:")
+        for ind in front:
+            print(ind)
+
+def best_solution_test(instance, dist_matrix):
+    print(f"--- Best Solution Test ---")
+
+    route = Route(instance, dist_matrix)
+    client_sequence = [98, 96, 95, 94, 92, 93, 97, 100, 99]
+    for client_id in client_sequence:
+        node = instance.nodes[client_id]
+        route.add_node(node)
+    route.close_route()
+    route.update_state()
+    print(route)
+
+
+def main():
+    print("VRPTW environment ready")
+    print("NumPy version:", np.__version__)
+
+    # Build path relative to repo root
+    data_path = root / "data" / "benchmarks" / "solomon-100" / "rc103.txt"
+
+    instance = read_solomon_instance(data_path)
+    dist_matrix = calculate_euclidean_matrix(instance.nodes)
+    print(f"Loaded instance: {instance}")
+
+    apply_seed()
+
+    lower_level_test(instance, dist_matrix)
+
+    lower_level_gcn(instance, dist_matrix)
+
+    # mmoea_dl_test(instance, dist_matrix)
+
+    memetic_test(instance, dist_matrix)
+
+    # best_solution_test(instance, dist_matrix)
+
+if __name__ == "__main__":
+    main()

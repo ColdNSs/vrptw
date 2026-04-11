@@ -3,7 +3,7 @@ from .base import BaseSolver
 from src.route import Route
 
 
-class NazariDRLSolver(BaseSolver):
+class NazariSolver(BaseSolver):
     def __init__(self, instance, dist_matrix, actor_network, device=None):
         super().__init__(instance, dist_matrix)
         self.actor_network = actor_network

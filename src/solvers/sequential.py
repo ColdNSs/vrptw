@@ -3,7 +3,7 @@ from src.route import Route
 
 
 class SequentialSolver(BaseSolver):
-    """Generates a route with the given sequence"""
+    """Generates a route with the given sequence."""
 
     def __init__(self, instance, dist_matrix):
         super().__init__(instance, dist_matrix)
