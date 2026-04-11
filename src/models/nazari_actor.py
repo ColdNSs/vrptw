@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class ActorNetwork(nn.Module):
+class NazariActorNetwork(nn.Module):
     def __init__(self, static_input_dim=6, dynamic_input_dim=4, hidden_dim=128):
-        super(ActorNetwork, self).__init__()
+        super(NazariActorNetwork, self).__init__()
 
         # 1. Static Encoder (Reads the map properties)
         # Maps[x, y, demand, ready_time, due_date, service_time] -> 128-dim vector

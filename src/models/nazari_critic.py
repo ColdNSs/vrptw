@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 
-class CriticNetwork(nn.Module):
+class NazariCriticNetwork(nn.Module):
     def __init__(self, static_input_dim=6, dynamic_input_dim=4, hidden_dim=128):
-        super(CriticNetwork, self).__init__()
+        super(NazariCriticNetwork, self).__init__()
 
         # Encoders (Separate from the Actor so they learn independently)
         self.static_encoder = nn.Linear(static_input_dim, hidden_dim)

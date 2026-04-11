@@ -14,8 +14,8 @@ root = Path(__file__).resolve().parent.parent
 # Add vrptw root to path so 'src' is importable as a package
 sys.path.insert(0, str(root))
 
-from models.actor import ActorNetwork
-from models.critic import CriticNetwork
+from models.nazari_actor import NazariActorNetwork
+from models.nazari_critic import NazariCriticNetwork
 from src.utils import get_device
 
 
@@ -33,8 +33,8 @@ class DRLTrainer:
         self.steps_per_epoch = steps_per_epoch
 
         # 1. Initialize Networks (Algorithm 1, Line 1)
-        self.actor = ActorNetwork().to(self.device)
-        self.critic = CriticNetwork().to(self.device)
+        self.actor = NazariActorNetwork().to(self.device)
+        self.critic = NazariCriticNetwork().to(self.device)
 
         # 2. Adam Optimizers for both networks
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=lr)
@@ -291,6 +291,7 @@ class DRLTrainer:
 
 
 if __name__ == "__main__":
+    os.makedirs(root / "checkpoints", exist_ok=True)
     trainer = DRLTrainer(epochs=60, max_num_nodes=50)
     trainer.load_epoch(39)
     trainer.train()

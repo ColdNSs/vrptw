@@ -14,11 +14,11 @@ from src.parser import read_solomon_instance
 from src.utils import calculate_euclidean_matrix, calculate_penalty_weights, get_device
 from src.route import Route
 
-from solvers import GreedySolver, DRLSolver, SequentialSolver
+from solvers import GreedySolver, NazariDRLSolver, SequentialSolver, GCNSolver
 from local_search import TwoOptLocalSearch, LNSLocalSearch, NoLocalSearch
 from evolution import MMOEA_DL_Evaluator, MMOEA_DL, MemeticEA, SplitEvaluator
 from evolution.utils import delete_redundant_solutions
-from models import ActorNetwork
+from models import NazariActorNetwork, GCNActorNetwork
 from copy import deepcopy, copy
 
 
@@ -72,11 +72,37 @@ def lower_level_drl(instance, dist_matrix):
     # Lower-level: repeatedly run greedy solver on all unvisited nodes
     device = get_device()
     checkpoint_path = root / "checkpoints" / "actor_epoch_20.pt"
-    drl_actor = ActorNetwork().to(device)
+    drl_actor = NazariActorNetwork().to(device)
     drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
-    solver = DRLSolver(instance, dist_matrix, drl_actor, device)
+    solver = NazariDRLSolver(instance, dist_matrix, drl_actor, device)
     route = solver.solve(unvisited)
     print(f"DRL: {route}")
+
+    # Lower-level: use 2-opt to optimize each route
+    local_search = TwoOptLocalSearch(instance, dist_matrix)
+    local_search.optimize(route)
+    print(f"2-opt: {route}")
+
+def lower_level_gcn(instance, dist_matrix):
+    print(f"--- Lower-level Test: GCN and 2-opt ---")
+
+    # Upper-level allocation
+
+    # Expected result on r102:
+    # Greedy: [0, 27, 69, 1, 50, 77, 3, 0]
+    # After 2-opt: [0, 27, 69, 1, 50, 3, 77, 0]
+    test_nodes = [1, 3, 27, 50, 69, 77]
+
+    unvisited = [instance.nodes[i] for i in test_nodes]
+
+    # Lower-level: repeatedly run greedy solver on all unvisited nodes
+    device = get_device()
+    checkpoint_path = root / "checkpoints" / "gcn_actor_epoch_20.pt"
+    drl_actor = GCNActorNetwork().to(device)
+    drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    solver = GCNSolver(instance, dist_matrix, drl_actor, device)
+    route = solver.solve(unvisited)
+    print(f"GCN: {route}")
 
     # Lower-level: use 2-opt to optimize each route
     local_search = TwoOptLocalSearch(instance, dist_matrix)
@@ -96,9 +122,9 @@ def mmoea_dl_test(instance, dist_matrix):
     # device = get_device()
     # print(f"Loading weights to device: {device}")
     # checkpoint_path = root / "checkpoints" / "actor_epoch_60.pt"
-    # drl_actor = ActorNetwork().to(device)
+    # drl_actor = NazariActorNetwork().to(device)
     # drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
-    # solver = DRLSolver(instance, dist_matrix, drl_actor, device)
+    # solver = NazariDRLSolver(instance, dist_matrix, drl_actor, device)
     solver = GreedySolver(instance, dist_matrix)
 
     # local_search = NoLocalSearch(instance, dist_matrix)
@@ -126,13 +152,13 @@ def memetic_test(instance, dist_matrix):
     w_fleet = 200.0
     w_time = 1.0
 
-    # device = get_device()
-    # print(f"Loading weights to device: {device}")
-    # checkpoint_path = root / "checkpoints" / "actor_epoch_60.pt"
-    # drl_actor = ActorNetwork().to(device)
-    # drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
-    # solver = DRLSolver(instance, dist_matrix, drl_actor, device)
-    solver = GreedySolver(instance, dist_matrix)
+    device = get_device()
+    print(f"Loading weights to device: {device}")
+    checkpoint_path = root / "checkpoints" / "gcn_actor_epoch_20.pt"
+    drl_actor = GCNActorNetwork().to(device)
+    drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    solver = GCNSolver(instance, dist_matrix, drl_actor, device)
+    # solver = GreedySolver(instance, dist_matrix)
     # solver = SequentialSolver(instance, dist_matrix)
 
     # local_search = NoLocalSearch(instance, dist_matrix)
@@ -140,7 +166,7 @@ def memetic_test(instance, dist_matrix):
     local_search = TwoOptLocalSearch(instance, dist_matrix)
 
     evaluator = SplitEvaluator(instance, dist_matrix, solver, local_search, w_fleet, w_time)
-    mematic = MemeticEA(instance, dist_matrix, evaluator, pop_size=100, max_gen=500, F=0.2)
+    mematic = MemeticEA(instance, dist_matrix, evaluator, pop_size=100, max_gen=300, F=0.2)
     fronts = mematic.solve()
 
     # Print top 10 fronts
@@ -170,7 +196,7 @@ def main():
     print("NumPy version:", np.__version__)
 
     # Build path relative to repo root
-    data_path = root / "data" / "benchmarks" / "solomon-100" / "r103.txt"
+    data_path = root / "data" / "benchmarks" / "solomon-100" / "c103.txt"
 
     instance = read_solomon_instance(data_path)
     dist_matrix = calculate_euclidean_matrix(instance.nodes)
@@ -180,11 +206,11 @@ def main():
 
     lower_level_test(instance, dist_matrix)
 
-    lower_level_drl(instance, dist_matrix)
+    lower_level_gcn(instance, dist_matrix)
 
     # mmoea_dl_test(instance, dist_matrix)
 
-    memetic_test(instance, dist_matrix)
+    # memetic_test(instance, dist_matrix)
 
     # best_solution_test(instance, dist_matrix)
 
