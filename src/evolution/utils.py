@@ -149,3 +149,64 @@ def calculate_crowding_distance(front):
         crowding_distance[front[i]] += (front[i + 1].f2_makespan - front[i - 1].f2_makespan) / f2_range
 
     return crowding_distance
+
+def calculate_cscd(front, k=3):
+    """
+    Clustering-based Special Crowding Distance (CSCD).
+    Blends Objective Space diversity (finding new trade-offs) with
+    Decision Space diversity (finding multimodal alternative routes).
+    """
+    num_inds = len(front)
+    cscd = {ind: 0.0 for ind in front}
+
+    if num_inds <= 2:
+        for ind in front:
+            cscd[ind] = float('inf')
+        return cscd
+
+    # ==========================================
+    # 1. OBJECTIVE SPACE CROWDING (Standard)
+    # ==========================================
+
+    obj_cd_dict = calculate_crowding_distance(front)
+
+    # ==========================================
+    # 2. DECISION SPACE CROWDING (Multimodality)
+    # ==========================================
+
+    dec_cd_dict = {ind: 0.0 for ind in front}
+    # Extract all chromosomes into a matrix (Shape: Num_Inds x Num_Tasks)
+    chromosomes = np.array([ind.chromosome for ind in front])
+
+    # Calculate pairwise Euclidean distances between all chromosomes
+    diff = chromosomes[:, np.newaxis, :] - chromosomes[np.newaxis, :, :]
+    dist_matrix = np.linalg.norm(diff, axis=2)
+
+    actual_k = min(k, num_inds - 1)
+
+    # For each individual, calculate the average distance to its 'k' nearest genetic neighbors
+    for i, ind in enumerate(front):
+        dists = dist_matrix[i]
+        # Sort distances and skip index 0 (which is distance to itself = 0.0)
+        nearest_dists = np.sort(dists)[1:actual_k + 1]
+        dec_cd_dict[ind] = np.mean(nearest_dists)
+
+    # ==========================================
+    # 3. NORMALIZE AND COMBINE
+    # ==========================================
+    # We must normalize them so Objective space and Decision space are on the same scale [0.0, 1.0]
+    valid_obj = [v for v in obj_cd_dict.values() if v != float('inf')]
+    max_obj = max(valid_obj) if valid_obj and max(valid_obj) > 0 else 1.0
+    max_dec = max(dec_cd_dict.values()) if max(dec_cd_dict.values()) > 0 else 1.0
+
+    for ind in front:
+        if obj_cd_dict[ind] == float('inf'):
+            # Always preserve the absolute extremes of the Pareto Front
+            cscd[ind] = float('inf')
+        else:
+            # Equal weighting: 50% Objective Diversity + 50% Structural Diversity
+            norm_obj = obj_cd_dict[ind] / max_obj
+            norm_dec = dec_cd_dict[ind] / max_dec
+            cscd[ind] = norm_obj + norm_dec
+
+    return cscd

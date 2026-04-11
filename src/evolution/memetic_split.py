@@ -1,7 +1,7 @@
 import numpy as np
 from .base import BaseEvolution, BaseIndividual, BaseEvaluator
 import random
-from .utils import fast_non_dominated_sort, delete_redundant_solutions, calculate_crowding_distance, get_exemplar_dbesm
+from .utils import fast_non_dominated_sort, delete_redundant_solutions, calculate_crowding_distance, get_exemplar_dbesm, calculate_cscd
 
 
 class MemeticEA(BaseEvolution):
@@ -168,7 +168,7 @@ class MemeticEA(BaseEvolution):
                 next_population.extend(front)
                 remain -= len(front)
             elif remain > 0:
-                crowding_distance = calculate_crowding_distance(front)
+                crowding_distance = calculate_cscd(front)
                 front.sort(key=lambda x: crowding_distance[x], reverse=True)
                 next_population.extend(front[:remain])
                 remain = 0
