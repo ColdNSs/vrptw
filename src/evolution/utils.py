@@ -210,3 +210,15 @@ def calculate_cscd(front, k=3):
             cscd[ind] = norm_obj + norm_dec
 
     return cscd
+
+def is_new_route_better(route_a, route_b):
+    cost_before = route_a.cost
+    tw_penalties_before = route_a.tw_penalties
+    cost_after = route_b.cost
+    tw_penalties_after = route_b.tw_penalties
+    is_better = False
+    if tw_penalties_after < tw_penalties_before:
+        is_better = True
+    elif tw_penalties_after == tw_penalties_before and cost_after < cost_before:
+        is_better = True
+    return is_better

@@ -86,6 +86,6 @@ class BaseEvolution(ABC):
         self.evaluator = evaluator
 
     @abstractmethod
-    def solve(self) -> list[list[BaseIndividual]]:
+    def solve(self) -> list[BaseIndividual]:
         """Return a list of Pareto Fronts."""
         ...

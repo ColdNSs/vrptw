@@ -58,7 +58,7 @@ def lower_level_test(instance, dist_matrix):
     print(f"LNS: {route_copy}")
 
 def lower_level_drl(instance, dist_matrix):
-    print(f"--- Lower-level Test: DRL and 2-opt ---")
+    print(f"--- Lower-level Test: GRU and LNS ---")
 
     # Upper-level allocation
 
@@ -71,17 +71,17 @@ def lower_level_drl(instance, dist_matrix):
 
     # Lower-level: repeatedly run greedy solver on all unvisited nodes
     device = get_device()
-    checkpoint_path = root / "checkpoints" / "actor_epoch_20.pt"
+    checkpoint_path = root / "checkpoints" / "actor_epoch_60.pt"
     drl_actor = NazariActorNetwork().to(device)
     drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device))
     solver = NazariSolver(instance, dist_matrix, drl_actor, device)
     route = solver.solve(unvisited)
-    print(f"DRL: {route}")
+    print(f"GRU: {route}")
 
     # Lower-level: use 2-opt to optimize each route
-    local_search = TwoOptLocalSearch(instance, dist_matrix)
+    local_search = LNSLocalSearch(instance, dist_matrix)
     local_search.optimize(route)
-    print(f"2-opt: {route}")
+    print(f"LNS: {route}")
 
 def lower_level_gcn(instance, dist_matrix):
     print(f"--- Lower-level Test: GCN and 2-opt ---")
@@ -108,6 +108,7 @@ def lower_level_gcn(instance, dist_matrix):
     local_search = TwoOptLocalSearch(instance, dist_matrix)
     local_search.optimize(route)
     print(f"2-opt: {route}")
+    # TODO: GCNSolver output is not deterministic?? Investigate it
 
 def mmoea_dl_test(instance, dist_matrix):
     print(f"--- MMOEA-DL Test ---")
@@ -199,21 +200,21 @@ def main():
     print("NumPy version:", np.__version__)
 
     # Build path relative to repo root
-    data_path = root / "data" / "benchmarks" / "solomon-100" / "rc103.txt"
+    data_path = root / "data" / "benchmarks" / "solomon-100" / "c102.txt"
 
     instance = read_solomon_instance(data_path)
     dist_matrix = calculate_euclidean_matrix(instance.nodes)
     print(f"Loaded instance: {instance}")
 
-    apply_seed()
+    apply_seed(42)
 
-    lower_level_test(instance, dist_matrix)
+    lower_level_drl(instance, dist_matrix)
 
     lower_level_gcn(instance, dist_matrix)
 
     # mmoea_dl_test(instance, dist_matrix)
 
-    memetic_test(instance, dist_matrix)
+    # memetic_test(instance, dist_matrix)
 
     # best_solution_test(instance, dist_matrix)
 

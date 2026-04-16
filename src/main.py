@@ -17,6 +17,7 @@ from solvers import GreedySolver, GCNSolver
 from local_search import TwoOptLocalSearch, LNSLocalSearch, NoLocalSearch
 from evolution import MemeticEA, SplitEvaluator
 from models import GCNActorNetwork
+from evolution.utils import fast_non_dominated_sort
 
 def run_memetic(instance, dist_matrix):
     print(f"--- Memetic Split Evolution ---")
@@ -28,12 +29,12 @@ def run_memetic(instance, dist_matrix):
     # device = get_device()
     device = torch.device("cpu")
 
-    # solver = GreedySolver(instance, dist_matrix)
-    print(f"Loading weights to device: {device}")
-    checkpoint_path = root / "checkpoints" / "gcn_actor_epoch_20.pt"
-    drl_actor = GCNActorNetwork().to(device)
-    drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
-    solver = GCNSolver(instance, dist_matrix, drl_actor, device)
+    solver = GreedySolver(instance, dist_matrix)
+    # print(f"Loading weights to device: {device}")
+    # checkpoint_path = root / "checkpoints" / "gcn_actor_epoch_20.pt"
+    # drl_actor = GCNActorNetwork().to(device)
+    # drl_actor.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
+    # solver = GCNSolver(instance, dist_matrix, drl_actor, device)
 
     # local_search = NoLocalSearch(instance, dist_matrix)
     # local_search = LNSLocalSearch(instance, dist_matrix, max_iters=30, removal_fraction=0.3)
@@ -41,7 +42,8 @@ def run_memetic(instance, dist_matrix):
 
     evaluator = SplitEvaluator(instance, dist_matrix, solver, local_search, w_fleet, w_time)
     memetic = MemeticEA(instance, dist_matrix, evaluator, pop_size=100, max_gen=300, F=0.2)
-    fronts = memetic.solve()
+    population = memetic.solve()
+    fronts, _, _ = fast_non_dominated_sort(population)
 
     # Print top 10 fronts
     for i, front in enumerate(fronts):
@@ -54,9 +56,10 @@ def run_memetic(instance, dist_matrix):
 def main():
     print("VRPTW environment ready")
     print("NumPy version:", np.__version__)
+    print("PyTorch version:", torch.__version__)
 
     # Build path relative to repo root
-    data_path = root / "data" / "benchmarks" / "solomon-100" / "rc103.txt"
+    data_path = root / "data" / "benchmarks" / "solomon-100" / "c201.txt"
 
     instance = read_solomon_instance(data_path)
     dist_matrix = calculate_euclidean_matrix(instance.nodes)

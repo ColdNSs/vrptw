@@ -1,5 +1,5 @@
 from .base import BaseEvolution, BaseIndividual, BaseEvaluator
-from .utils import fast_non_dominated_sort, delete_redundant_solutions, calculate_crowding_distance, get_exemplar_dbesm
+from .utils import fast_non_dominated_sort, delete_redundant_solutions, calculate_cscd, get_exemplar_dbesm
 import numpy as np
 import random
 from scipy.cluster.vq import kmeans2
@@ -49,7 +49,7 @@ class MMOEA_DL(BaseEvolution):
                           f"LoadPen={load_penalty:.2f}, TWPen={tw_penalty:.2f}, TotPen={total_penalty:.2f}")
             print(f"Generation {gen + 1}/{self.max_gen} completed. {sample_str}")
 
-        return fronts  # Returns the final Pareto Fronts
+        return population
 
     def _initialize_population(self, structured_pop):
         heuristic_size = max(1, int(self.pop_size * structured_pop))
@@ -187,8 +187,7 @@ class MMOEA_DL(BaseEvolution):
                 remain -= len(front)
             elif remain > 0:
                 # The front is too large, we must select the most diverse individuals
-                # TODO: change to CSCD
-                crowding_distance = calculate_crowding_distance(front)
+                crowding_distance = calculate_cscd(front)
 
                 # Sort descending by crowding distance (larger distance = more isolated/diverse = better)
                 front.sort(key=lambda x: crowding_distance[x], reverse=True)

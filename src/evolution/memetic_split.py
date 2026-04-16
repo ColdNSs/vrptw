@@ -2,14 +2,22 @@ import numpy as np
 from .base import BaseEvolution, BaseIndividual, BaseEvaluator
 import random
 from .utils import fast_non_dominated_sort, delete_redundant_solutions, calculate_crowding_distance, get_exemplar_dbesm, calculate_cscd
-
+from .utils import is_new_route_better
+from solvers import SequentialSolver
+from local_search import LNSLocalSearch
 
 class MemeticEA(BaseEvolution):
-    def __init__(self, instance, dist_matrix, evaluator, heuristic_init=0.1, pop_size=100, max_gen=200, F=0.2, CR=0.9):
+    def __init__(self, instance, dist_matrix, evaluator, heuristic_init=0.1, pop_size=100, max_gen=200, F=0.2, CR=0.9, log_history=False):
         super().__init__(instance, dist_matrix, evaluator)
         self.heuristic_init = heuristic_init
         self.pop_size = pop_size
         self.max_gen = max_gen
+        self.log_history = log_history
+        self.history = {
+            "min_penalty": [],
+            "avg_distance": [],
+            "avg_makespan": []
+        }
 
         # DE Parameters
         self.F = F  # Mutation scaling factor
@@ -19,10 +27,19 @@ class MemeticEA(BaseEvolution):
         # 1. Initialization
         population = self._initialize_population(self.heuristic_init)
         self._evaluate_population(population)
+        history = {
+            "min_penalty": [],
+            "avg_distance": [],
+            "avg_makespan": []
+        }
         fronts = [[]]
 
         for gen in range(self.max_gen):
             assert len(population) == self.pop_size
+
+            # Fleet Annealing for Prins Split
+            progress = gen / self.max_gen
+            self.evaluator.penalty_annealing(progress)
 
             # 2. Reproduction (DE Mutation & Crossover)
             offspring_population = self._generate_offspring(population)
@@ -40,17 +57,38 @@ class MemeticEA(BaseEvolution):
             # 5. Environmental Selection
             population = self._environmental_selection(fronts)
 
+            # Log history
+            if self.log_history:
+                current_min_penalty = min(ind.total_penalty for ind in population)
+                history["min_penalty"].append(current_min_penalty)
+
+                feasible_front_1 = [ind for ind in fronts[0] if ind.total_penalty == 0]
+                if feasible_front_1:
+                    avg_dist = sum(ind.f1_distance for ind in feasible_front_1) / len(feasible_front_1)
+                    avg_make = sum(ind.f2_makespan for ind in feasible_front_1) / len(feasible_front_1)
+                else:
+                    avg_dist, avg_make = -1.0, -1.0
+
+                history["avg_distance"].append(avg_dist)
+                history["avg_makespan"].append(avg_make)
+
             sample_ind = fronts[0][0]
             f1_distance = sample_ind.f1_distance
             f2_makespan = sample_ind.f2_makespan
             fleet_penalty = sample_ind.fleet_penalty  # <-- Changed from load_penalty
             tw_penalty = sample_ind.tw_penalty
             total_penalty = sample_ind.total_penalty
-            sample_str = (f"SampleInd(Dist={f1_distance:.2f}, MSpan={f2_makespan:.2f}, "
+            fleet_size = len(sample_ind.routes)
+            sample_str = (f"SampleInd(Dist={f1_distance:.2f}, MSpan={f2_makespan:.2f}, Fleet={fleet_size}, "
                           f"FleetPen={fleet_penalty:.2f}, TWPen={tw_penalty:.2f}, TotPen={total_penalty:.2f})")
             print(f"Generation {gen + 1}/{self.max_gen} completed. {sample_str}")
 
-        return fronts  # Returns the final Pareto Fronts
+        if self.log_history:
+            self.history = history
+        return population
+
+    def get_history(self):
+        return self.history
 
     def _initialize_population(self, structured_pop):
         heuristic_size = max(1, int(self.pop_size * structured_pop))
@@ -283,6 +321,10 @@ class SplitEvaluator(BaseEvaluator):
         super().__init__(instance, dist_matrix, solver, local_search)
         self.w_fleet = w_fleet
         self.w_time = w_time
+        self.sequential_solver = SequentialSolver(instance, dist_matrix)
+        self.vehicle_fixed_cost = w_fleet
+        self.full_vehicle_fixed_cost = self.vehicle_fixed_cost * 100
+        self.lns = LNSLocalSearch(instance, dist_matrix)
 
     def evaluate_population(self, population):
         all_unvisited = []
@@ -307,23 +349,38 @@ class SplitEvaluator(BaseEvaluator):
                 continue
 
             for sub_tour in slices:
+                # unvisited is ordered exactly as the EA dictates
                 unvisited = [self.instance.nodes[i] for i in sub_tour]
                 all_unvisited.append(unvisited)
                 route_mapping.append(ind_idx)
 
-        # 2. BATCHED SOLVE: Hand all valid slices to the DRL / Greedy solver at once
+        # 2. BATCHED SOLVE: Hand all valid slices to BOTH solvers
         if not all_unvisited:
             return
 
-        solved_routes = self.solver.solve_batch(all_unvisited)
+        # A. Route strictly following the EA's exact sequence
+        # (Assuming sequential_solver has a solve_batch method, otherwise use list comprehension)
+        seq_routes = self.sequential_solver.solve_batch(all_unvisited)
 
-        # 3. SCATTER: Apply local search and map routes back to their individuals
-        for route, ind_idx in zip(solved_routes, route_mapping):
-            self.local_search.optimize(route)
+        # B. Route using the intelligent lower-level solver (Greedy / DRL)
+        heur_routes = self.solver.solve_batch(all_unvisited)
+
+        # 3. COMPETE & SCATTER: Apply local search to the winner and map back
+        for seq_route, heur_route, ind_idx in zip(seq_routes, heur_routes, route_mapping):
+
+            # Compare sequences: does the heuristic beat the EA's native sequence?
+            if is_new_route_better(seq_route, heur_route):
+                best_route = heur_route
+            else:
+                best_route = seq_route
+
+            # Local search fine-tuning on the winning route
+            self.local_search.optimize(best_route)
+            # self.lns.optimize(best_route)
 
             ind = population[ind_idx]
-            ind.tw_penalty += route.tw_penalties
-            ind.routes.append(route)
+            ind.tw_penalty += best_route.tw_penalties
+            ind.routes.append(best_route)
 
         # 4. LAMARCKIAN WRITE-BACK & OBJECTIVES
         for ind in population:
@@ -340,7 +397,8 @@ class SplitEvaluator(BaseEvaluator):
 
                 # Standard Objectives
                 ind.f1_distance = sum(r.cost for r in ind.routes)
-                ind.f2_makespan = max(r.finish_time for r in ind.routes)
+                # ind.f2_makespan = max(r.finish_time for r in ind.routes)
+                ind.f2_makespan = len(ind.routes)
 
     def _prins_split(self, giant_tour):
         """
@@ -401,8 +459,8 @@ class SplitEvaluator(BaseEvaluator):
                 # 4. Total Edge Weight
                 # We add a fixed "vehicle deployment cost" (e.g., 100) so the shortest
                 # path naturally favors using fewer vehicles, preventing massive fleet overages.
-                vehicle_fixed_cost = 100.0
-                edge_weight = route_cost + (self.w_time * route_tw_pen) + vehicle_fixed_cost
+                edge_weight = route_cost + (self.w_time * route_tw_pen) + self.vehicle_fixed_cost
+                # edge_weight = route_cost + (self.full_vehicle_fixed_cost / 100 * route_tw_pen) + self.vehicle_fixed_cost
 
                 # 5. Bellman-Ford Shortest Path Update
                 if V[i] + edge_weight < V[j]:
@@ -441,5 +499,9 @@ class SplitEvaluator(BaseEvaluator):
             self.w_fleet *= 1.2
             self.w_time *= 0.9
 
-        self.w_fleet = max(0.1, min(self.w_fleet, 1000.0))
-        self.w_time = max(0.1, min(self.w_time, 1000.0))
+        self.w_fleet = max(0.1, min(self.w_fleet, 10000.0))
+        self.w_time = max(0.1, min(self.w_time, 10000.0))
+
+    def penalty_annealing(self, progress):
+        current_fleet_weight = self.w_fleet + (self.full_vehicle_fixed_cost * (progress ** 3))
+        self.vehicle_fixed_cost = current_fleet_weight

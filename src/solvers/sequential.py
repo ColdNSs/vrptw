@@ -11,10 +11,9 @@ class SequentialSolver(BaseSolver):
     def solve(self, sequence):
         route = Route(self.instance, self.dist_matrix)
 
-        while sequence:
-            best_node = sequence[0]
+        for i in range(len(sequence)):
+            best_node = sequence[i]
             route.add_node(best_node)
-            sequence.remove(best_node)
 
         route.close_route()
         route.update_state()
