@@ -81,7 +81,7 @@ def run_all_experiments(pop_size, max_gen):
         evaluator = SplitEvaluator(instance, dist_matrix, solver, local_search, w_fleet=2000.0, w_time=100.0)
 
         # 初始化进化算法 (根据需要调整参数，此处假设100代)
-        ea = MemeticEA(instance, dist_matrix, evaluator, heuristic_init=0.1, pop_size=pop_size, max_gen=max_gen, F=0.2, log_history=True)
+        ea = MemeticEA(instance, dist_matrix, evaluator, heuristic_init=0.1, pop_size=pop_size, max_gen=max_gen, F=0.13, log_history=True)
 
         # 开始计时与求解
         start_time = time.time()
@@ -130,4 +130,4 @@ def run_all_experiments(pop_size, max_gen):
 
 
 if __name__ == "__main__":
-    run_all_experiments(pop_size=200, max_gen=200)
+    run_all_experiments(pop_size=200, max_gen=299)

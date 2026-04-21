@@ -58,7 +58,7 @@ def extract_best_distances(results_dir):
 
 if __name__ == "__main__":
     # results_directory = root / "experiments" / "results_pop200_gen500"
-    results_directory = root / "experiments" / "results"
+    results_directory = root / "experiments" / "results_pop200_gen300"
     if os.path.exists(results_directory):
         extract_best_distances(results_directory)
     else:

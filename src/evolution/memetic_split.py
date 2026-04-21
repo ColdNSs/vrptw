@@ -37,6 +37,8 @@ class MemeticEA(BaseEvolution):
         for gen in range(self.max_gen):
             assert len(population) == self.pop_size
 
+            self.evaluator.update_penalty_weights(population)
+
             # Fleet Annealing for Prins Split
             progress = gen / self.max_gen
             self.evaluator.penalty_annealing(progress)
@@ -48,7 +50,7 @@ class MemeticEA(BaseEvolution):
             # 3. Combine
             combined_pop = population + offspring_population
 
-            self.evaluator.update_penalty_weights(combined_pop)
+            # self.evaluator.update_penalty_weights(combined_pop)
 
             # 4. Sorting & Redundancy Deletion
             fronts, rank, _ = fast_non_dominated_sort(combined_pop)

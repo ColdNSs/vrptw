@@ -20,7 +20,7 @@ from src.utils import get_device
 
 
 class DRLTrainer:
-    def __init__(self, min_num_nodes=5, max_num_nodes=20, cluster=0.5, batch_size=256, lr=5e-4, epochs=20, steps_per_epoch=1000):
+    def __init__(self, min_num_nodes=5, max_num_nodes=50, cluster=0.5, batch_size=256, lr=5e-4, epochs=20, steps_per_epoch=1000):
         if min_num_nodes < 3:
             raise ValueError("min_num_nodes should be at least 3")
         self.device = get_device()
@@ -292,6 +292,6 @@ class DRLTrainer:
 
 if __name__ == "__main__":
     os.makedirs(root / "checkpoints", exist_ok=True)
-    trainer = DRLTrainer(epochs=60, max_num_nodes=50)
-    trainer.load_epoch(39)
+    trainer = DRLTrainer(epochs=20)
+    # trainer.load_epoch(39)
     trainer.train()

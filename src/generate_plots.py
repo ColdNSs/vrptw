@@ -144,8 +144,8 @@ def plot_execution_time(all_data, save_dir):
 
 
 if __name__ == "__main__":
-    results_directory = root / "experiments" / "results"
-    plots_directory = root / "experiments" / "plots"
+    results_directory = root / "experiments" / "results_pop200_gen300"
+    plots_directory = root / "experiments" / "plots_20260418"
     os.makedirs(plots_directory, exist_ok=True)
 
     print("开始加载数据...")

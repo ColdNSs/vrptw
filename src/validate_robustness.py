@@ -136,7 +136,7 @@ def plot_robustness_chart(results, save_dir):
     # ==========================================
     # 核心修改 2：强行固定左 Y 轴范围为 0 到 100
     # ==========================================
-    ax1.set_ylim(0, 100)
+    ax1.set_ylim(0, 200)
 
     # 在柱子上标具体数字
     for bar in bars:
@@ -179,8 +179,8 @@ def plot_robustness_chart(results, save_dir):
 
 
 if __name__ == "__main__":
-    results_dir = root / "experiments" / "results"
-    plots_dir = root / "experiments" / "plots"
+    results_dir = root / "experiments" / "results_pop200_gen300"
+    plots_dir = root / "experiments" / "plots_pop200_gen300"
     os.makedirs(plots_dir, exist_ok=True)
 
     print("加载并提取多模态数据...")
@@ -189,7 +189,7 @@ if __name__ == "__main__":
 
     # 设置路网切断比例：0%, 2%, 4%, ..., 20%
     # (在有10000条边的图中，20%意味着随机阻断2000条边，这是极高强度的破坏测试)
-    mask_ratios = [0.0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.15, 0.20]
+    mask_ratios = [0.0, 0.01, 0.02, 0.03, 0.04, 0.06, 0.08, 0.10]
 
     print("开始执行蒙特卡洛交通拥堵模拟 (可能需要几秒钟)...")
     robustness_results = simulate_traffic_jams(valid_instances, mask_ratios, trials=100)
