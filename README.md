@@ -4,8 +4,6 @@
 
 A VRPTW solver inspired by **MMOEA-DL** (IEEE TEVC 2025) — a deep reinforcement learning assisted multimodal multi-objective bi-level optimization method for multi-robot task allocation.
 
----
-
 ## Project Overview
 
 A bi-level optimization solver for the **Vehicle Routing Problem with Time Windows (VRPTW)**:
@@ -14,8 +12,6 @@ A bi-level optimization solver for the **Vehicle Routing Problem with Time Windo
 - **Lower level**: DRL Gated Recurrent Network + Large Neighborhood Search - sequence customers within each route (path planning)
 
 Following the MMOEA-DL paradigm, we combine evolutionary exploration at the upper level with learned (DRL) and local search (LNS) exploitation at the lower level.
-
----
 
 ## How to run
 
